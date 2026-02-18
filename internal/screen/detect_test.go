@@ -3,209 +3,209 @@ package screen
 import (
 	"context"
 	"errors"
+	"os/exec"
 	"testing"
 )
 
 type MockScriptExecutor struct {
-	output  string
-	err     error
-	callIdx int
-	calls   []mockCall
-}
-
-type mockCall struct {
 	output string
 	err    error
 }
 
 func (m *MockScriptExecutor) RunAppleScript(ctx context.Context, script string) (string, error) {
-	if len(m.calls) > 0 {
-		if m.callIdx < len(m.calls) {
-			c := m.calls[m.callIdx]
-			m.callIdx++
-			return c.output, c.err
-		}
-		return "", errors.New("no more mock calls configured")
-	}
 	return m.output, m.err
 }
 
-func noDockMock(boundsOutput string) *MockScriptExecutor {
-	return &MockScriptExecutor{
-		calls: []mockCall{
-			{output: boundsOutput},
-			{err: errors.New("dock auto-hidden")},
-		},
-	}
-}
-
-func withDockMock(boundsOutput, dockOutput string) *MockScriptExecutor {
-	return &MockScriptExecutor{
-		calls: []mockCall{
-			{output: boundsOutput},
-			{output: "false"},
-			{output: dockOutput},
-		},
-	}
-}
-
-func noDockMockErr(err error) *MockScriptExecutor {
-	return &MockScriptExecutor{
-		calls: []mockCall{
-			{err: err},
-		},
-	}
-}
-
-func noDockMockOutput(boundsOutput string) *MockScriptExecutor {
-	return noDockMock(boundsOutput)
-}
-
-func TestDetectScreen(t *testing.T) {
+func TestParseScreenList(t *testing.T) {
 	tests := []struct {
 		name      string
-		executor  *MockScriptExecutor
-		want      ScreenInfo
+		input     string
+		want      []ScreenInfo
 		wantError bool
 	}{
 		{
-			name:     "standard bounds no dock",
-			executor: noDockMock("0, 25, 2560, 1575"),
-			want:     ScreenInfo{X: 0, Y: 25, Width: 2560, Height: 1550},
+			name:  "single screen",
+			input: "0,33,1728,1000",
+			want:  []ScreenInfo{{X: 0, Y: 33, Width: 1728, Height: 1000}},
 		},
 		{
-			name:     "bounds with different origin",
-			executor: noDockMock("100, 50, 1920, 1080"),
-			want:     ScreenInfo{X: 100, Y: 50, Width: 1820, Height: 1030},
+			name:  "dual monitor",
+			input: "0,33,1728,1000;1728,0,1920,1080",
+			want: []ScreenInfo{
+				{X: 0, Y: 33, Width: 1728, Height: 1000},
+				{X: 1728, Y: 0, Width: 1920, Height: 1080},
+			},
 		},
 		{
-			name:     "bounds with no spaces",
-			executor: noDockMock("0,25,2560,1575"),
-			want:     ScreenInfo{X: 0, Y: 25, Width: 2560, Height: 1550},
-		},
-		{
-			name:     "bounds with extra spaces",
-			executor: noDockMock("0 , 25 , 2560 , 1575"),
-			want:     ScreenInfo{X: 0, Y: 25, Width: 2560, Height: 1550},
-		},
-		{
-			name:      "invalid format - not enough values",
-			executor:  noDockMock("0, 25, 2560"),
-			wantError: true,
-		},
-		{
-			name:      "invalid format - non-numeric",
-			executor:  noDockMock("0, abc, 2560, 1575"),
-			wantError: true,
-		},
-		{
-			name:      "executor error",
-			executor:  noDockMockErr(errors.New("AppleScript failed")),
-			wantError: true,
+			name:  "triple monitor",
+			input: "-1920,0,1920,1080;0,33,1728,1000;1728,0,2560,1440",
+			want: []ScreenInfo{
+				{X: -1920, Y: 0, Width: 1920, Height: 1080},
+				{X: 0, Y: 33, Width: 1728, Height: 1000},
+				{X: 1728, Y: 0, Width: 2560, Height: 1440},
+			},
 		},
 		{
 			name:      "empty output",
-			executor:  noDockMock(""),
+			input:     "",
 			wantError: true,
 		},
 		{
-			name:     "bottom dock subtracted",
-			executor: withDockMock("0, 0, 1728, 1117", "146, 1029, 1436, 78"),
-			want:     ScreenInfo{X: 0, Y: 0, Width: 1728, Height: 1029},
-		},
-		{
-			name:     "left dock subtracted",
-			executor: withDockMock("0, 25, 1920, 1080", "0, 25, 80, 1055"),
-			want:     ScreenInfo{X: 80, Y: 25, Width: 1840, Height: 1055},
-		},
-		{
-			name:     "right dock subtracted",
-			executor: withDockMock("0, 25, 1920, 1080", "1840, 25, 80, 1055"),
-			want:     ScreenInfo{X: 0, Y: 25, Width: 1840, Height: 1055},
+			name:      "invalid values",
+			input:     "abc,0,1920,1080",
+			wantError: true,
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := DetectScreen(tt.executor)
-
+			got, err := parseScreenList(tt.input)
 			if (err != nil) != tt.wantError {
-				t.Errorf("DetectScreen() error = %v, wantError %v", err, tt.wantError)
+				t.Errorf("parseScreenList() error = %v, wantError %v", err, tt.wantError)
 				return
 			}
-
-			if !tt.wantError && got != tt.want {
-				t.Errorf("DetectScreen() = %+v, want %+v", got, tt.want)
+			if !tt.wantError {
+				if len(got) != len(tt.want) {
+					t.Fatalf("got %d screens, want %d", len(got), len(tt.want))
+				}
+				for i := range got {
+					if got[i] != tt.want[i] {
+						t.Errorf("screen[%d] = %+v, want %+v", i, got[i], tt.want[i])
+					}
+				}
 			}
 		})
 	}
 }
 
-func TestDetectScreenBoundsCalculation(t *testing.T) {
-	executor := noDockMock("10, 20, 110, 120")
-
-	got, err := DetectScreen(executor)
-	if err != nil {
-		t.Fatalf("DetectScreen() error = %v", err)
+func TestScreenContaining(t *testing.T) {
+	screens := []ScreenInfo{
+		{X: 0, Y: 33, Width: 1728, Height: 1000},
+		{X: 1728, Y: 0, Width: 1920, Height: 1080},
 	}
 
-	if got.X != 10 {
-		t.Errorf("X = %d, want 10", got.X)
+	tests := []struct {
+		name string
+		x, y int
+		want ScreenInfo
+	}{
+		{name: "primary screen", x: 500, y: 400, want: screens[0]},
+		{name: "second screen", x: 2000, y: 500, want: screens[1]},
+		{name: "boundary of second", x: 1728, y: 0, want: screens[1]},
+		{name: "outside all falls back to first", x: 5000, y: 5000, want: screens[0]},
 	}
-	if got.Y != 20 {
-		t.Errorf("Y = %d, want 20", got.Y)
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := screenContaining(screens, tt.x, tt.y)
+			if got != tt.want {
+				t.Errorf("screenContaining(%d,%d) = %+v, want %+v", tt.x, tt.y, got, tt.want)
+			}
+		})
 	}
-	if got.Width != 100 {
-		t.Errorf("Width = %d, want 100", got.Width)
+}
+
+func TestGetFrontmostWindowPosition(t *testing.T) {
+	tests := []struct {
+		name      string
+		output    string
+		err       error
+		wantX     int
+		wantY     int
+		wantError bool
+	}{
+		{name: "valid", output: "259, 181", wantX: 259, wantY: 181},
+		{name: "second monitor", output: "2000, 100", wantX: 2000, wantY: 100},
+		{name: "error", err: errors.New("fail"), wantError: true},
+		{name: "invalid", output: "abc", wantError: true},
 	}
-	if got.Height != 100 {
-		t.Errorf("Height = %d, want 100", got.Height)
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			executor := &MockScriptExecutor{output: tt.output, err: tt.err}
+			pos, err := getFrontmostWindowPosition(context.Background(), executor)
+			if (err != nil) != tt.wantError {
+				t.Errorf("error = %v, wantError %v", err, tt.wantError)
+				return
+			}
+			if !tt.wantError && (pos[0] != tt.wantX || pos[1] != tt.wantY) {
+				t.Errorf("got {%d,%d}, want {%d,%d}", pos[0], pos[1], tt.wantX, tt.wantY)
+			}
+		})
 	}
 }
 
 func TestParseBounds(t *testing.T) {
-	got, err := parseBounds("0, 0, 1728, 1117")
-	if err != nil {
-		t.Fatalf("parseBounds() error = %v", err)
-	}
-	if got.Width != 1728 || got.Height != 1117 {
-		t.Errorf("parseBounds() = %+v, want 1728x1117", got)
-	}
-}
-
-func TestSubtractDock(t *testing.T) {
 	tests := []struct {
-		name   string
-		screen ScreenInfo
-		dock   dockInfo
-		want   ScreenInfo
+		name      string
+		input     string
+		want      ScreenInfo
+		wantError bool
 	}{
-		{
-			name:   "bottom dock",
-			screen: ScreenInfo{X: 0, Y: 0, Width: 1728, Height: 1117},
-			dock:   dockInfo{x: 146, y: 1029, width: 1436, height: 78, orientation: "bottom"},
-			want:   ScreenInfo{X: 0, Y: 0, Width: 1728, Height: 1029},
-		},
-		{
-			name:   "left dock",
-			screen: ScreenInfo{X: 0, Y: 25, Width: 1920, Height: 1055},
-			dock:   dockInfo{x: 0, y: 25, width: 80, height: 1055, orientation: "left"},
-			want:   ScreenInfo{X: 80, Y: 25, Width: 1840, Height: 1055},
-		},
-		{
-			name:   "right dock",
-			screen: ScreenInfo{X: 0, Y: 25, Width: 1920, Height: 1055},
-			dock:   dockInfo{x: 1840, y: 25, width: 80, height: 1055, orientation: "right"},
-			want:   ScreenInfo{X: 0, Y: 25, Width: 1840, Height: 1055},
-		},
+		{name: "standard", input: "0, 0, 1728, 1117", want: ScreenInfo{X: 0, Y: 0, Width: 1728, Height: 1117}},
+		{name: "with offset", input: "10, 20, 110, 120", want: ScreenInfo{X: 10, Y: 20, Width: 100, Height: 100}},
+		{name: "empty", input: "", wantError: true},
+		{name: "wrong count", input: "0, 25, 2560", wantError: true},
+		{name: "non-numeric", input: "0, abc, 2560, 1575", wantError: true},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got := subtractDock(tt.screen, tt.dock)
-			if got != tt.want {
-				t.Errorf("subtractDock() = %+v, want %+v", got, tt.want)
+			got, err := parseBounds(tt.input)
+			if (err != nil) != tt.wantError {
+				t.Errorf("error = %v, wantError %v", err, tt.wantError)
+				return
+			}
+			if !tt.wantError && got != tt.want {
+				t.Errorf("got %+v, want %+v", got, tt.want)
 			}
 		})
 	}
+}
+
+func TestDetectScreenIntegration(t *testing.T) {
+	origExecCommand := execCommand
+	defer func() { execCommand = origExecCommand }()
+
+	t.Run("single screen via JXA", func(t *testing.T) {
+		execCommand = func(ctx context.Context, name string, args ...string) *exec.Cmd {
+			return exec.Command("echo", "0,33,1728,1000")
+		}
+		got, err := DetectScreen(&MockScriptExecutor{})
+		if err != nil {
+			t.Fatalf("error = %v", err)
+		}
+		want := ScreenInfo{X: 0, Y: 33, Width: 1728, Height: 1000}
+		if got != want {
+			t.Errorf("got %+v, want %+v", got, want)
+		}
+	})
+
+	t.Run("multi screen picks current terminal", func(t *testing.T) {
+		execCommand = func(ctx context.Context, name string, args ...string) *exec.Cmd {
+			return exec.Command("echo", "0,33,1728,1000;1728,0,1920,1080")
+		}
+		got, err := DetectScreen(&MockScriptExecutor{output: "2000, 500"})
+		if err != nil {
+			t.Fatalf("error = %v", err)
+		}
+		want := ScreenInfo{X: 1728, Y: 0, Width: 1920, Height: 1080}
+		if got != want {
+			t.Errorf("got %+v, want %+v", got, want)
+		}
+	})
+
+	t.Run("JXA fails falls back to Finder", func(t *testing.T) {
+		execCommand = func(ctx context.Context, name string, args ...string) *exec.Cmd {
+			return exec.Command("false")
+		}
+		got, err := DetectScreen(&MockScriptExecutor{output: "0, 25, 2560, 1575"})
+		if err != nil {
+			t.Fatalf("error = %v", err)
+		}
+		want := ScreenInfo{X: 0, Y: 25, Width: 2560, Height: 1550}
+		if got != want {
+			t.Errorf("got %+v, want %+v", got, want)
+		}
+	})
 }

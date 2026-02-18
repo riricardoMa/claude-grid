@@ -5,6 +5,7 @@ package screen
 import (
 	"context"
 	"fmt"
+	"os/exec"
 	"strconv"
 	"strings"
 	"time"
@@ -19,27 +20,136 @@ type ScreenInfo struct {
 	Height int
 }
 
+var jxaScreenScript = strings.TrimSpace(`
+ObjC.import("AppKit");
+var screens = $.NSScreen.screens;
+var primary = screens.objectAtIndex(0).frame;
+var pH = primary.size.height;
+var result = [];
+for (var i = 0; i < screens.count; i++) {
+    var v = screens.objectAtIndex(i).visibleFrame;
+    var x = Math.round(v.origin.x);
+    var y = Math.round(pH - v.origin.y - v.size.height);
+    var w = Math.round(v.size.width);
+    var h = Math.round(v.size.height);
+    result.push(x + "," + y + "," + w + "," + h);
+}
+result.join(";");
+`)
+
+var execCommand = exec.CommandContext
+
 func DetectScreen(executor script.ScriptExecutor) (ScreenInfo, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
-	applescript := `tell application "Finder" to get bounds of window of desktop`
-	output, err := executor.RunAppleScript(ctx, applescript)
+	screens, err := detectAllScreens(ctx)
+	if err != nil {
+		return detectScreenFallback(ctx, executor)
+	}
+
+	if len(screens) == 1 {
+		return screens[0], nil
+	}
+
+	windowPos, posErr := getFrontmostWindowPosition(ctx, executor)
+	if posErr != nil {
+		return screens[0], nil
+	}
+
+	return screenContaining(screens, windowPos[0], windowPos[1]), nil
+}
+
+func detectAllScreens(ctx context.Context) ([]ScreenInfo, error) {
+	cmd := execCommand(ctx, "osascript", "-l", "JavaScript", "-e", jxaScreenScript)
+	output, err := cmd.CombinedOutput()
+	if err != nil {
+		return nil, fmt.Errorf("JXA screen detection failed: %w", err)
+	}
+
+	return parseScreenList(strings.TrimSpace(string(output)))
+}
+
+func parseScreenList(output string) ([]ScreenInfo, error) {
+	if output == "" {
+		return nil, fmt.Errorf("empty screen output")
+	}
+
+	parts := strings.Split(output, ";")
+	screens := make([]ScreenInfo, 0, len(parts))
+	for _, p := range parts {
+		info, err := parseXYWH(strings.TrimSpace(p))
+		if err != nil {
+			return nil, err
+		}
+		screens = append(screens, info)
+	}
+
+	if len(screens) == 0 {
+		return nil, fmt.Errorf("no screens detected")
+	}
+
+	return screens, nil
+}
+
+func parseXYWH(s string) (ScreenInfo, error) {
+	parts := strings.Split(s, ",")
+	if len(parts) != 4 {
+		return ScreenInfo{}, fmt.Errorf("expected 4 values, got %d in %q", len(parts), s)
+	}
+
+	vals := make([]int, 4)
+	for i, p := range parts {
+		v, err := strconv.Atoi(strings.TrimSpace(p))
+		if err != nil {
+			return ScreenInfo{}, fmt.Errorf("invalid value at position %d: %q", i, p)
+		}
+		vals[i] = v
+	}
+
+	return ScreenInfo{X: vals[0], Y: vals[1], Width: vals[2], Height: vals[3]}, nil
+}
+
+func getFrontmostWindowPosition(ctx context.Context, executor script.ScriptExecutor) ([2]int, error) {
+	output, err := executor.RunAppleScript(ctx,
+		`tell application "System Events" to get position of window 1 of (first process whose frontmost is true)`)
+	if err != nil {
+		return [2]int{}, fmt.Errorf("get frontmost window position: %w", err)
+	}
+
+	parts := strings.Split(strings.TrimSpace(output), ",")
+	if len(parts) != 2 {
+		return [2]int{}, fmt.Errorf("unexpected position output: %q", output)
+	}
+
+	x, err := strconv.Atoi(strings.TrimSpace(parts[0]))
+	if err != nil {
+		return [2]int{}, fmt.Errorf("parse x: %w", err)
+	}
+	y, err := strconv.Atoi(strings.TrimSpace(parts[1]))
+	if err != nil {
+		return [2]int{}, fmt.Errorf("parse y: %w", err)
+	}
+
+	return [2]int{x, y}, nil
+}
+
+func screenContaining(screens []ScreenInfo, x, y int) ScreenInfo {
+	for _, s := range screens {
+		if x >= s.X && x < s.X+s.Width && y >= s.Y && y < s.Y+s.Height {
+			return s
+		}
+	}
+	return screens[0]
+}
+
+func detectScreenFallback(ctx context.Context, executor script.ScriptExecutor) (ScreenInfo, error) {
+	output, err := executor.RunAppleScript(ctx,
+		`tell application "Finder" to get bounds of window of desktop`)
 	if err != nil {
 		return ScreenInfo{}, fmt.Errorf("failed to get screen bounds: %w", err)
 	}
-
-	info, err := parseBounds(output)
-	if err != nil {
-		return ScreenInfo{}, err
-	}
-
-	dock, dockErr := detectDock(ctx, executor)
-	if dockErr == nil {
-		info = subtractDock(info, dock)
-	}
-
-	return info, nil
+	return parseBounds(output)
 }
 
 func parseBounds(output string) (ScreenInfo, error) {
@@ -70,85 +180,4 @@ func parseBounds(output string) (ScreenInfo, error) {
 		Width:  right - left,
 		Height: bottom - top,
 	}, nil
-}
-
-type dockInfo struct {
-	x, y          int
-	width, height int
-	orientation   string
-}
-
-func detectDock(ctx context.Context, executor script.ScriptExecutor) (dockInfo, error) {
-	autoHideScript := `tell application "System Events" to get autohide of dock preferences`
-	ahOutput, ahErr := executor.RunAppleScript(ctx, autoHideScript)
-	if ahErr == nil && strings.TrimSpace(strings.ToLower(ahOutput)) == "true" {
-		return dockInfo{}, fmt.Errorf("dock is auto-hidden")
-	}
-
-	posScript := `tell application "System Events" to tell process "Dock"
-	set dockPos to position of list 1
-	set dockSize to size of list 1
-	return {item 1 of dockPos, item 2 of dockPos, item 1 of dockSize, item 2 of dockSize}
-end tell`
-
-	output, err := executor.RunAppleScript(ctx, posScript)
-	if err != nil {
-		return dockInfo{}, fmt.Errorf("detect dock: %w", err)
-	}
-
-	parts := strings.Split(strings.TrimSpace(output), ",")
-	if len(parts) != 4 {
-		return dockInfo{}, fmt.Errorf("unexpected dock output: %q", output)
-	}
-
-	vals := make([]int, 4)
-	for i, p := range parts {
-		v, convErr := strconv.Atoi(strings.TrimSpace(p))
-		if convErr != nil {
-			return dockInfo{}, fmt.Errorf("parse dock value %q: %w", p, convErr)
-		}
-		vals[i] = v
-	}
-
-	d := dockInfo{x: vals[0], y: vals[1], width: vals[2], height: vals[3]}
-
-	if d.width > d.height {
-		if d.y > d.height {
-			d.orientation = "bottom"
-		} else {
-			d.orientation = "top"
-		}
-	} else {
-		if d.x < d.width {
-			d.orientation = "left"
-		} else {
-			d.orientation = "right"
-		}
-	}
-
-	return d, nil
-}
-
-func subtractDock(s ScreenInfo, d dockInfo) ScreenInfo {
-	switch d.orientation {
-	case "bottom":
-		dockTop := d.y
-		screenBottom := s.Y + s.Height
-		if dockTop < screenBottom {
-			s.Height = dockTop - s.Y
-		}
-	case "left":
-		dockRight := d.x + d.width
-		if dockRight > s.X {
-			s.Width -= dockRight - s.X
-			s.X = dockRight
-		}
-	case "right":
-		dockLeft := d.x
-		screenRight := s.X + s.Width
-		if dockLeft < screenRight {
-			s.Width = dockLeft - s.X
-		}
-	}
-	return s
 }
