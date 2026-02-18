@@ -1,0 +1,33 @@
+=== Terminal.app E2E Full Lifecycle ===
+Date: Tue Feb 17 22:22:40 PST 2026
+
+--- Step 1: Spawn 4 windows ---
+Detected: darwin, terminal terminal, screen 1728x1117
+Layout: 2x2 grid (864x558 per window)
+Directory: /Users/boxiangma/Documents/GitHub/claude-grid
+Spawning 4 Claude Code instances...
+Session "e2e-terminal" created. Use `claude-grid kill e2e-terminal` to close all.
+
+--- Step 2: Count Terminal windows ---
+5
+
+--- Step 3: List sessions ---
+SESSION       BACKEND   WINDOWS  DIR                             CREATED
+e2e-terminal  terminal  4        ~/Documents/GitHub/claude-grid  2026-02-17 22:22
+
+--- Step 4: Verify session file exists ---
+-rw-r--r--  1 boxiangma  staff  400 Feb 17 22:22 /Users/boxiangma/.claude-grid/sessions/e2e-terminal.json
+
+--- Step 5: Kill session ---
+Session 'e2e-terminal' killed. 4 windows closed.
+
+--- Step 6: Verify session file removed ---
+ls: /Users/boxiangma/.claude-grid/sessions/e2e-terminal.json: No such file or directory
+
+--- Step 7: Verify windows closed ---
+31:44: execution error: Terminal got an error: Application isn’t running. (-600)
+
+--- Step 8: Verify list is empty ---
+No active sessions.
+
+=== RESULT: PASS ===

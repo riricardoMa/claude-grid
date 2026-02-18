@@ -1,0 +1,4 @@
+  • checking                                  path=.goreleaser.yml
+  • brews is being phased out in favor of homebrew_casks, check https://goreleaser.com/deprecations#brews for more info
+  • 1 configuration file(s) validated
+  • thanks for using GoReleaser!

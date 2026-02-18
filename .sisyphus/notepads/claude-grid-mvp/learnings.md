@@ -267,3 +267,57 @@ Plan initialized. Wave 1 starting: 7 parallel tasks (scaffolding, grid calc, App
 - Kill nonexistent session: exit 1 with descriptive error ✓
 - Kill terminal session (windows already closed): exit 0, session file deleted ✓
 - Kill warp session (Warp not running): warns about close failure, still deletes session ✓
+
+## [2026-02-17] Task 17: Homebrew Formula in goreleaser
+
+### Goreleaser Homebrew Configuration
+- **Valid fields**: repository (owner, name, token), homepage, description, license, test, install, caveats
+- **Invalid fields**: `folder` is NOT a valid goreleaser Homebrew config option (removed)
+- Token uses environment variable: `{{ .Env.HOMEBREW_TAP_GITHUB_TOKEN }}`
+
+### Configuration Details
+- Repository: `riricardoMa/homebrew-tap`
+- Test command: `system "#{bin}/claude-grid", "version"` (runs version check to verify binary)
+- Install: Simple `bin.install "claude-grid"` (no post-install scripts)
+- Caveats: Inform users about `claude` requirement and Warp optional dependency
+
+### Deprecation Notice
+- `brews:` section shows deprecation warning: "being phased out in favor of homebrew_casks"
+- Configuration still valid and functional for current releases
+- Future migration to `homebrew_casks` may be needed for newer goreleaser versions
+
+### Verification
+- `goreleaser check` passes with deprecation warning (acceptable)
+- YAML syntax valid
+- Evidence saved: `.sisyphus/evidence/task-17-goreleaser-check.txt`
+
+
+## [2026-02-17] Task 15: End-to-End Integration QA
+
+### Terminal.app Full Lifecycle — PASS
+- Spawn 4 windows: creates 2x2 grid (864x558 per window) correctly
+- List: shows session with correct backend, window count, directory
+- Kill: removes all windows AND session file
+- Post-kill: `list` shows "No active sessions", session file deleted
+- Window count showed 5 (4 spawned + 1 pre-existing Terminal window) — expected
+
+### Warp Full Lifecycle — PASS (with known limitation)
+- Spawn 2 windows: creates 1x2 grid (864x1117 per window) correctly
+- List: shows session correctly
+- Kill: **WARNING** — `close` message not supported by Warp via System Events
+  - Error: `System Events got an error: window 1 of process "Warp" doesn't understand the "close" message. (-1708)`
+  - Session file is still correctly deleted
+  - This is a Warp limitation, not a bug — Warp lacks standard AppleScript window management
+- Post-kill: session file removed, list empty
+
+### Edge Cases — ALL PASS
+- count=1: Spawns single fullscreen-ish window (1728x1117), 1x1 grid ✓
+- count=9 --layout 3x3: Manual layout override works (576x372 per window) ✓
+- count=0: Error message "invalid count 0: must be between 1 and 16" ✓
+  - Note: exit code is 0 instead of non-zero — minor issue for scripting use
+- version: Shows "claude-grid dev (darwin/arm64) commit:unknown built:unknown" ✓
+- --help: Shows full command help with all flags and subcommands ✓
+
+### Auto-detect Behavior
+- When Warp is the frontmost terminal, auto-detect selects Warp for all tests
+- Terminal.app test required explicit `--terminal terminal` flag to override

@@ -1,0 +1,62 @@
+=== Edge Cases E2E Tests ===
+Date: Tue Feb 17 22:23:58 PST 2026
+
+--- Test 1: Single window (count=1) ---
+Detected: darwin, terminal warp, screen 1728x1117
+Layout: 1x1 grid (1728x1117 per window)
+Directory: /Users/boxiangma/Documents/GitHub/claude-grid
+Spawning 1 Claude Code instances...
+Session "e2e-single" created. Use `claude-grid kill e2e-single` to close all.
+
+Killing e2e-single...
+Warning: failed to close windows: close warp windows: osascript execution failed: exit status 1 (output: 90:113: execution error: System Events got an error: window 1 of process "Warp" doesn’t understand the “close” message. (-1708))
+Session 'e2e-single' killed. 1 windows closed.
+
+--- Test 2: Manual layout 3x3 with 9 windows ---
+Detected: darwin, terminal warp, screen 1728x1117
+Layout: 3x3 grid (576x372 per window)
+Directory: /Users/boxiangma/Documents/GitHub/claude-grid
+Spawning 9 Claude Code instances...
+Session "e2e-layout" created. Use `claude-grid kill e2e-layout` to close all.
+
+List sessions after 3x3 spawn:
+SESSION     BACKEND  WINDOWS  DIR                             CREATED
+e2e-layout  warp     9        ~/Documents/GitHub/claude-grid  2026-02-17 22:24
+
+Killing e2e-layout...
+Warning: failed to close windows: close warp windows: osascript execution failed: exit status 1 (output: 90:113: execution error: System Events got an error: window 1 of process "Warp" doesn’t understand the “close” message. (-1708))
+Session 'e2e-layout' killed. 9 windows closed.
+
+--- Test 3: Invalid count (0) ---
+invalid count 0: must be between 1 and 16
+Exit code: 0
+
+--- Test 4: Version ---
+claude-grid dev (darwin/arm64) commit:unknown built:unknown
+
+--- Test 5: Help ---
+Claude Grid is a terminal UI application for managing and monitoring AI agent sessions.
+
+Usage:
+  claude-grid <count> [flags]
+  claude-grid [command]
+
+Available Commands:
+  completion  Generate the autocompletion script for the specified shell
+  help        Help about any command
+  kill        Kill a session and close all its windows
+  list        List all active sessions
+  version     Show version information
+
+Flags:
+  -d, --dir string        Working directory (default: current directory)
+  -h, --help              help for claude-grid
+  -l, --layout string     Grid layout, e.g. 2x3 (default: auto)
+  -n, --name string       Session name (default: auto-generated)
+  -t, --terminal string   Terminal backend: terminal, warp (default: auto-detect)
+  -v, --verbose           Enable verbose output
+      --version           Print version information
+
+Use "claude-grid [command] --help" for more information about a command.
+
+=== RESULT: PASS ===

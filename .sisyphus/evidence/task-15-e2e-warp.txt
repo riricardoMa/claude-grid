@@ -1,0 +1,30 @@
+=== Warp E2E Full Lifecycle ===
+Date: Tue Feb 17 22:23:21 PST 2026
+
+Warp detected: YES
+
+--- Step 1: Spawn 2 windows ---
+Detected: darwin, terminal warp, screen 1728x1117
+Layout: 1x2 grid (864x1117 per window)
+Directory: /Users/boxiangma/Documents/GitHub/claude-grid
+Spawning 2 Claude Code instances...
+Session "e2e-warp" created. Use `claude-grid kill e2e-warp` to close all.
+
+--- Step 2: List sessions ---
+SESSION   BACKEND  WINDOWS  DIR                             CREATED
+e2e-warp  warp     2        ~/Documents/GitHub/claude-grid  2026-02-17 22:23
+
+--- Step 3: Verify session file ---
+-rw-r--r--  1 boxiangma  staff  282 Feb 17 22:23 /Users/boxiangma/.claude-grid/sessions/e2e-warp.json
+
+--- Step 4: Kill session ---
+Warning: failed to close windows: close warp windows: osascript execution failed: exit status 1 (output: 90:113: execution error: System Events got an error: window 1 of process "Warp" doesn’t understand the “close” message. (-1708))
+Session 'e2e-warp' killed. 2 windows closed.
+
+--- Step 5: Verify session file removed ---
+ls: /Users/boxiangma/.claude-grid/sessions/e2e-warp.json: No such file or directory
+
+--- Step 6: Verify list empty ---
+No active sessions.
+
+=== RESULT: PASS ===

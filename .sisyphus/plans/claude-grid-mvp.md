@@ -1583,7 +1583,7 @@ Wave FINAL (Verification — 4 parallel):
 
 ---
 
-- [ ] 15. End-to-End Integration QA
+- [x] 15. End-to-End Integration QA
 
   **What to do**:
   - This is a VERIFICATION-ONLY task. No new code.
@@ -1674,7 +1674,7 @@ Wave FINAL (Verification — 4 parallel):
 
 ---
 
-- [ ] 16. README
+- [x] 16. README
 
   **What to do**:
   - Rewrite `README.md` with:
@@ -1769,7 +1769,7 @@ Wave FINAL (Verification — 4 parallel):
 
 ---
 
-- [ ] 17. Homebrew Formula in goreleaser
+- [x] 17. Homebrew Formula in goreleaser
 
   **What to do**:
   - Update `.goreleaser.yml` to include Homebrew tap configuration:
