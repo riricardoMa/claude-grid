@@ -1,0 +1,6 @@
+invalid count 0: must be between 1 and 16
+exit:1
+invalid count -1: must be between 1 and 16
+exit:1
+invalid count "abc": must be a number between 1 and 16
+exit:1

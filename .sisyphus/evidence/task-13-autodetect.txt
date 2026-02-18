@@ -1,0 +1,5 @@
+testing: warning: no tests to run
+PASS
+ok  	github.com/riricardoMa/claude-grid/internal/terminal	(cached) [no tests to run]
+
+exit:0

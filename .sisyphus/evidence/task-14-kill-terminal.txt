@@ -1,0 +1,7 @@
+=== QA: Kill Terminal Session (already-closed windows) ===
+Setup: Created fake session "test-kill-session" with terminal backend, 2 windows (IDs: 99999, 99998)
+Command: /tmp/claude-grid kill test-kill-session
+Output: Session 'test-kill-session' killed. 2 windows closed.
+Exit code: 0
+Verification: Session file deleted (ls returns "No such file or directory")
+Result: PASS — gracefully handled already-closed windows, deleted session

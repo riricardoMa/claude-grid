@@ -1,0 +1,9 @@
+=== QA: Kill Warp Session (already-closed windows) ===
+Setup: Created fake session "test-kill-warp" with warp backend, 1 window
+Command: /tmp/claude-grid kill test-kill-warp
+Output:
+  Warning: failed to close windows: close warp windows: osascript execution failed: exit status 1 (output: 90:113: execution error: System Events got an error: window 1 of process "Warp" doesn't understand the "close" message. (-1708))
+  Session 'test-kill-warp' killed. 1 windows closed.
+Exit code: 0
+Verification: Session file deleted (ls returns "No such file or directory")
+Result: PASS — warned about close failure but still deleted session and exited 0

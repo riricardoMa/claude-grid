@@ -4,8 +4,11 @@ package terminal
 
 import (
 	"context"
+	"fmt"
+	"strings"
 
 	"github.com/riricardoMa/claude-grid/internal/grid"
+	"github.com/riricardoMa/claude-grid/internal/script"
 	"github.com/riricardoMa/claude-grid/internal/screen"
 )
 
@@ -67,7 +70,30 @@ type WindowInfo struct {
 // If preferred is non-empty, it attempts to use that backend first.
 // Falls back to auto-detection (Warp > Terminal.app) if preferred is unavailable.
 func DetectBackend(preferred string) (TerminalBackend, error) {
-	// TODO: Implement backend detection logic
-	// Strategy: Warp (if installed) > Terminal.app
-	panic("not implemented")
+	executor := script.NewOSAExecutor()
+	warpBackend := NewWarpBackend(executor)
+	terminalBackend := NewTerminalAppBackend(executor)
+
+	normalized := strings.ToLower(strings.TrimSpace(preferred))
+	if normalized == "" || normalized == "auto" {
+		if warpBackend.Available() {
+			return warpBackend, nil
+		}
+		return terminalBackend, nil
+	}
+
+	switch normalized {
+	case "warp":
+		if warpBackend.Available() {
+			return warpBackend, nil
+		}
+		return nil, fmt.Errorf("warp backend is not available. Install Warp or use --terminal terminal")
+	case "terminal":
+		if terminalBackend.Available() {
+			return terminalBackend, nil
+		}
+		return nil, fmt.Errorf("terminal backend is not available")
+	default:
+		return nil, fmt.Errorf("unsupported terminal backend %q. Available options: warp, terminal", preferred)
+	}
 }

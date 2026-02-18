@@ -1,0 +1,4 @@
+=== QA: Build Verification ===
+go build ./... — PASS (no output, exit 0)
+go test ./... — PASS (all packages pass)
+go vet ./... — PASS (no output, exit 0)

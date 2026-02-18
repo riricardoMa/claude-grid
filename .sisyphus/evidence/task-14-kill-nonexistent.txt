@@ -1,0 +1,5 @@
+=== QA: Kill Non-existent Session ===
+Command: /tmp/claude-grid kill nonexistent-session
+Output: Session 'nonexistent-session' not found. Run 'claude-grid list' to see active sessions.
+Exit code: 1
+Result: PASS — descriptive error with suggestion to use 'list'

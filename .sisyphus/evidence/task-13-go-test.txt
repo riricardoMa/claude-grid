@@ -1,0 +1,9 @@
+?   	github.com/riricardoMa/claude-grid	[no test files]
+?   	github.com/riricardoMa/claude-grid/cmd	[no test files]
+ok  	github.com/riricardoMa/claude-grid/internal/grid	(cached)
+ok  	github.com/riricardoMa/claude-grid/internal/screen	(cached)
+ok  	github.com/riricardoMa/claude-grid/internal/script	(cached)
+ok  	github.com/riricardoMa/claude-grid/internal/session	(cached)
+ok  	github.com/riricardoMa/claude-grid/internal/terminal	(cached)
+
+exit:0

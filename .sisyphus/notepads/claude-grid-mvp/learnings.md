@@ -225,3 +225,45 @@ Plan initialized. Wave 1 starting: 7 parallel tasks (scaffolding, grid calc, App
 - GREEN: `go test ./internal/terminal/ -v -run TestTerminalApp` passes with mock executor only.
 - `go build ./internal/terminal/` passes.
 - `go vet ./internal/terminal/` is currently blocked by pre-existing `warp_test.go` references to not-yet-implemented Warp symbols; `go vet -tests=false ./internal/terminal/` passes for non-test package code.
+
+## [2026-02-18] Task 13: Root command orchestration
+
+### Root flow wiring conventions
+- Keep root argument validation inside `RunE` when custom stderr copy is required and `SilenceErrors=true` is enabled.
+- For negative count input (`-1`), Cobra treats it as a flag parse error; `SetFlagErrorFunc` is required to remap numeric-like flag errors back to count validation messaging.
+- Use `exec.LookPath("claude")` before any spawn work so first-run failures are fast and deterministic.
+
+### Resilience patterns
+- Screen detection should fail soft: warn to stderr and fallback to `1920x1080` while preserving full spawn flow.
+- Compute minimum width/height from the first `count` bounds and warn when below `400x200` instead of blocking execution.
+- On spawn/session persistence failures, attempt backend cleanup (`CloseSession`) best-effort and still return a non-zero failure.
+
+### Backend selection behavior
+- `terminal.DetectBackend(preferred)` should normalize input (`trim + lowercase`) and support explicit values plus auto mode.
+- Auto mode policy is deterministic: `Warp` when available, otherwise `Terminal.app`.
+- Unknown backend names should return actionable errors with supported values (`warp`, `terminal`).
+
+## [2026-02-17] Task 14: Kill Command
+
+### Implementation Pattern
+- Follows same factory pattern as list/version: `NewKillCmd(storePath string, executor script.ScriptExecutor) *cobra.Command`
+- Registered in root.go via `cmd.AddCommand(NewKillCmd("", script.NewOSAExecutor()))`
+- Uses `cobra.ExactArgs(1)` for session name validation
+
+### Graceful Error Handling
+- CloseSession errors are warned but don't prevent session file deletion
+- DeleteSession errors are warned but don't fail the command (exit 0)
+- Session not found: prints descriptive error to stderr with 'list' suggestion, returns error (exit 1)
+
+### Backend Determination
+- Simple switch on `sess.Backend` field: "terminal" → TerminalAppBackend, "warp" → WarpBackend
+- Unknown backend returns error — no silent fallback
+
+### Build Tag Alignment
+- cmd/kill.go uses `//go:build darwin` since it imports terminal package (all darwin-gated)
+- root.go already imports terminal, so no cross-platform concern from adding kill registration
+
+### QA Results
+- Kill nonexistent session: exit 1 with descriptive error ✓
+- Kill terminal session (windows already closed): exit 0, session file deleted ✓
+- Kill warp session (Warp not running): warns about close failure, still deletes session ✓

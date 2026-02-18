@@ -1359,7 +1359,7 @@ Wave FINAL (Verification — 4 parallel):
   - Files: `.github/workflows/ci.yml, .github/workflows/release.yml, .goreleaser.yml`
   - Pre-commit: `goreleaser check` (if available)
 
-- [ ] 13. Root Command — Wire Grid Spawning End-to-End
+- [x] 13. Root Command — Wire Grid Spawning End-to-End
 
   **What to do**:
   - Rewrite `cmd/root.go` to wire all modules together:
@@ -1496,7 +1496,7 @@ Wave FINAL (Verification — 4 parallel):
 
 ---
 
-- [ ] 14. Kill Command
+- [x] 14. Kill Command
 
   **What to do**:
   - Create `cmd/kill.go`:

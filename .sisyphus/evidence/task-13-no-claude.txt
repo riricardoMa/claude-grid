@@ -1,0 +1,3 @@
+'claude' not found in PATH. Install: npm install -g @anthropic-ai/claude-code
+Or specify a different location (v0.2).
+exit:1
