@@ -1,0 +1,22 @@
+=== RUN   TestDetectScreen
+=== RUN   TestDetectScreen/standard_bounds
+=== RUN   TestDetectScreen/bounds_with_different_origin
+=== RUN   TestDetectScreen/bounds_with_no_spaces
+=== RUN   TestDetectScreen/bounds_with_extra_spaces
+=== RUN   TestDetectScreen/invalid_format_-_not_enough_values
+=== RUN   TestDetectScreen/invalid_format_-_non-numeric
+=== RUN   TestDetectScreen/executor_error
+=== RUN   TestDetectScreen/empty_output
+--- PASS: TestDetectScreen (0.00s)
+    --- PASS: TestDetectScreen/standard_bounds (0.00s)
+    --- PASS: TestDetectScreen/bounds_with_different_origin (0.00s)
+    --- PASS: TestDetectScreen/bounds_with_no_spaces (0.00s)
+    --- PASS: TestDetectScreen/bounds_with_extra_spaces (0.00s)
+    --- PASS: TestDetectScreen/invalid_format_-_not_enough_values (0.00s)
+    --- PASS: TestDetectScreen/invalid_format_-_non-numeric (0.00s)
+    --- PASS: TestDetectScreen/executor_error (0.00s)
+    --- PASS: TestDetectScreen/empty_output (0.00s)
+=== RUN   TestDetectScreenBoundsCalculation
+--- PASS: TestDetectScreenBoundsCalculation (0.00s)
+PASS
+ok  	github.com/riricardoMa/claude-grid/internal/screen	(cached)

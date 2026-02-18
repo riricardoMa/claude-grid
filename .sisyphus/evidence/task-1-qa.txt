@@ -1,0 +1,47 @@
+=== TASK 1 QA SCENARIOS ===
+
+SCENARIO 1: Help flag
+$ ./claude-grid --help
+Expected: Shows usage information
+Claude Grid is a terminal UI application for managing and monitoring AI agent sessions.
+
+Usage:
+  claude-grid <count> [flags]
+
+Flags:
+  -h, --help      help for claude-grid
+  -v, --verbose   Enable verbose output
+      --version   Print version information
+
+SCENARIO 2: Version flag
+$ ./claude-grid --version
+Expected: Shows version information
+claude-grid version dev (commit: unknown, date: unknown)
+
+SCENARIO 3: Missing required argument
+$ ./claude-grid
+Expected: Error about missing <count> argument
+
+SCENARIO 4: Valid argument
+$ ./claude-grid 5
+Expected: Command executes successfully
+
+SCENARIO 5: Verbose flag
+$ ./claude-grid --verbose 5
+Expected: Command executes with verbose flag set
+
+SCENARIO 6: File structure verification
+Files created:
+-rw-r--r--  1 boxiangma  staff  1103 Feb 17 21:56 cmd/root.go
+-rw-r--r--  1 boxiangma  staff   206 Feb 17 21:56 go.mod
+-rw-r--r--  1 boxiangma  staff   272 Feb 17 21:55 main.go
+
+Directories created:
+total 0
+drwxr-xr-x   7 boxiangma  staff  224 Feb 17 21:55 .
+drwxr-xr-x  14 boxiangma  staff  448 Feb 17 21:56 ..
+drwxr-xr-x   4 boxiangma  staff  128 Feb 17 21:56 grid
+drwxr-xr-x   4 boxiangma  staff  128 Feb 17 21:56 screen
+drwxr-xr-x   4 boxiangma  staff  128 Feb 17 21:56 script
+drwxr-xr-x   2 boxiangma  staff   64 Feb 17 21:55 session
+drwxr-xr-x   3 boxiangma  staff   96 Feb 17 21:56 terminal

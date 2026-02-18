@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/spf13/cobra"
+	"github.com/riricardoMa/claude-grid/internal/script"
 )
 
 // NewRootCommand creates and returns the root cobra command.
@@ -33,6 +34,9 @@ func NewRootCommand(version, commit, date string) *cobra.Command {
 
 	cmd.PersistentFlags().BoolP("verbose", "v", false, "Enable verbose output")
 	cmd.PersistentFlags().Bool("version", false, "Print version information")
+
+	cmd.AddCommand(NewVersionCmd(version, commit, date))
+	cmd.AddCommand(NewListCmd("", script.NewOSAExecutor()))
 
 	return cmd
 }

@@ -1,0 +1,50 @@
+=== RUN   TestSanitizeForAppleScript
+=== RUN   TestSanitizeForAppleScript/empty_string
+=== RUN   TestSanitizeForAppleScript/simple_text
+=== RUN   TestSanitizeForAppleScript/backslash_only
+=== RUN   TestSanitizeForAppleScript/double_quote_only
+=== RUN   TestSanitizeForAppleScript/backslash_then_quote
+=== RUN   TestSanitizeForAppleScript/path_with_spaces
+=== RUN   TestSanitizeForAppleScript/path_with_backslash
+=== RUN   TestSanitizeForAppleScript/quoted_string
+=== RUN   TestSanitizeForAppleScript/dollar_sign
+=== RUN   TestSanitizeForAppleScript/semicolon
+=== RUN   TestSanitizeForAppleScript/complex_path_with_quotes_and_backslashes
+=== RUN   TestSanitizeForAppleScript/multiple_backslashes
+=== RUN   TestSanitizeForAppleScript/multiple_quotes
+=== RUN   TestSanitizeForAppleScript/mixed_special_chars
+--- PASS: TestSanitizeForAppleScript (0.00s)
+    --- PASS: TestSanitizeForAppleScript/empty_string (0.00s)
+    --- PASS: TestSanitizeForAppleScript/simple_text (0.00s)
+    --- PASS: TestSanitizeForAppleScript/backslash_only (0.00s)
+    --- PASS: TestSanitizeForAppleScript/double_quote_only (0.00s)
+    --- PASS: TestSanitizeForAppleScript/backslash_then_quote (0.00s)
+    --- PASS: TestSanitizeForAppleScript/path_with_spaces (0.00s)
+    --- PASS: TestSanitizeForAppleScript/path_with_backslash (0.00s)
+    --- PASS: TestSanitizeForAppleScript/quoted_string (0.00s)
+    --- PASS: TestSanitizeForAppleScript/dollar_sign (0.00s)
+    --- PASS: TestSanitizeForAppleScript/semicolon (0.00s)
+    --- PASS: TestSanitizeForAppleScript/complex_path_with_quotes_and_backslashes (0.00s)
+    --- PASS: TestSanitizeForAppleScript/multiple_backslashes (0.00s)
+    --- PASS: TestSanitizeForAppleScript/multiple_quotes (0.00s)
+    --- PASS: TestSanitizeForAppleScript/mixed_special_chars (0.00s)
+=== RUN   TestScriptExecutorInterface
+--- PASS: TestScriptExecutorInterface (0.00s)
+=== RUN   TestOSAExecutorRunAppleScript
+=== RUN   TestOSAExecutorRunAppleScript/simple_echo_command
+=== RUN   TestOSAExecutorRunAppleScript/invalid_AppleScript
+--- PASS: TestOSAExecutorRunAppleScript (0.07s)
+    --- PASS: TestOSAExecutorRunAppleScript/simple_echo_command (0.04s)
+    --- PASS: TestOSAExecutorRunAppleScript/invalid_AppleScript (0.03s)
+=== RUN   TestOSAExecutorTimeout
+--- PASS: TestOSAExecutorTimeout (0.01s)
+=== RUN   TestOSAExecutorContextCancellation
+--- PASS: TestOSAExecutorContextCancellation (0.00s)
+=== RUN   TestSanitizeIntegration
+=== RUN   TestSanitizeIntegration/path_with_quotes
+=== RUN   TestSanitizeIntegration/path_with_backslashes
+--- PASS: TestSanitizeIntegration (0.05s)
+    --- PASS: TestSanitizeIntegration/path_with_quotes (0.03s)
+    --- PASS: TestSanitizeIntegration/path_with_backslashes (0.03s)
+PASS
+ok  	github.com/riricardoMa/claude-grid/internal/script	(cached)

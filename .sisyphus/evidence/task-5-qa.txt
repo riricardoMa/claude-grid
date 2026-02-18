@@ -1,0 +1,54 @@
+TASK 5: TerminalBackend Interface + Types - QA Evidence
+========================================================
+
+Date: 2026-02-17
+Task: Define backend interface and shared types for terminal spawning
+
+DELIVERABLES CHECKLIST:
+✓ File created: internal/terminal/backend.go with //go:build darwin tag
+✓ Interface: TerminalBackend with 4 methods:
+  - Name() string
+  - Available() bool
+  - SpawnWindows(ctx context.Context, opts SpawnOptions) ([]WindowInfo, error)
+  - CloseSession(sessionID string) error
+✓ Struct: SpawnOptions with fields:
+  - Count int
+  - Command string
+  - Dir string
+  - Grid grid.GridLayout
+  - Screen screen.ScreenInfo
+  - Bounds []grid.WindowBounds
+  - SessionID string
+✓ Struct: WindowInfo with fields:
+  - ID string
+  - Index int
+  - Backend string
+✓ Function: DetectBackend(preferred string) (TerminalBackend, error) skeleton
+
+BUILD VERIFICATION:
+✓ go build ./internal/terminal/ - SUCCESS (no errors)
+✓ go vet ./internal/terminal/ - SUCCESS (no warnings)
+
+DESIGN DECISIONS VERIFIED:
+✓ No SendKeys() method - deferred to v0.2 with prompts
+✓ No separate Tile() method - tiling is atomic with SpawnWindows()
+✓ No implementation of backends - skeleton only with panic("not implemented")
+✓ Spawn+tile atomic decision honored (documented in method comment)
+
+INTERFACE DESIGN RATIONALE:
+- Small, focused interface (4 methods) for easy implementation and testing
+- SpawnWindows returns []WindowInfo for tracking spawned windows
+- SessionID in SpawnOptions enables session tracking and cleanup
+- Context parameter in SpawnWindows allows timeout/cancellation
+- DetectBackend skeleton prepared for future implementation
+
+TYPE SAFETY:
+✓ All types properly exported (capitalized)
+✓ Proper imports: context, grid, screen packages
+✓ Build constraint //go:build darwin ensures macOS-only compilation
+✓ No circular dependencies
+
+NEXT STEPS:
+- Task 6: Session storage (SessionManager interface)
+- Task 7: Makefile setup
+- Future: Implement Terminal.app and Warp backends

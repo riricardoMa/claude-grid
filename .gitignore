@@ -1,0 +1,29 @@
+# Binaries
+/bin/
+/claude-grid
+*.exe
+*.dll
+*.so
+*.dylib
+
+# Test binaries
+*.test
+
+# Coverage
+*.out
+
+# Build artifacts
+dist/
+
+# Dependency directories
+vendor/
+
+# OS files
+.DS_Store
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~

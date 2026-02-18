@@ -895,7 +895,7 @@ Wave FINAL (Verification — 4 parallel):
   - Files: `Makefile`
   - Pre-commit: `make build`
 
-- [ ] 8. Terminal.app Backend (TDD)
+- [x] 8. Terminal.app Backend (TDD)
 
   **What to do**:
   - **RED**: Write `internal/terminal/terminal_app_test.go`:
@@ -1003,7 +1003,7 @@ Wave FINAL (Verification — 4 parallel):
 
 ---
 
-- [ ] 9. Warp Backend (TDD)
+- [x] 9. Warp Backend (TDD)
 
   **What to do**:
   - **RED**: Write `internal/terminal/warp_test.go`:
@@ -1130,7 +1130,7 @@ Wave FINAL (Verification — 4 parallel):
 
 ---
 
-- [ ] 10. Version Command
+- [x] 10. Version Command
 
   **What to do**:
   - Create `cmd/version.go`:
@@ -1193,7 +1193,7 @@ Wave FINAL (Verification — 4 parallel):
 
 ---
 
-- [ ] 11. List Command
+- [x] 11. List Command
 
   **What to do**:
   - Create `cmd/list.go`:
@@ -1272,7 +1272,7 @@ Wave FINAL (Verification — 4 parallel):
 
 ---
 
-- [ ] 12. CI + goreleaser Config
+- [x] 12. CI + goreleaser Config
 
   **What to do**:
   - Create `.github/workflows/ci.yml`:

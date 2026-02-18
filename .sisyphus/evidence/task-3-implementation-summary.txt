@@ -1,0 +1,42 @@
+# Task 3: AppleScript Executor Utility (TDD) - Implementation Summary
+
+## Files Created
+1. internal/script/executor_test.go - Comprehensive test suite
+2. internal/script/executor.go - Implementation with ScriptExecutor interface
+
+## Key Features Implemented
+
+### SanitizeForAppleScript Function
+- Escapes backslashes FIRST (\\ → \\\\)
+- Then escapes double quotes (" → \")
+- Prevents AppleScript injection attacks
+- Handles edge cases: paths with spaces, quotes, backslashes, dollar signs, semicolons
+
+### ScriptExecutor Interface
+- Defines contract: RunAppleScript(ctx context.Context, script string) (string, error)
+- Allows mocking for backend tests without running real AppleScript
+
+### OSAExecutor Implementation
+- Wraps osascript -e command execution
+- Automatic context timeout (10s default, customizable)
+- Respects context cancellation
+- Captures both stdout and stderr
+- Returns descriptive errors with output content
+
+## Test Coverage
+- 14 sanitization test cases covering edge cases
+- Interface verification (MockExecutor + OSAExecutor)
+- AppleScript execution tests (valid and invalid scripts)
+- Timeout behavior verification
+- Context cancellation verification
+- Integration tests with sanitized inputs
+
+## Test Results
+✓ All 23 tests PASS
+✓ No linting errors (go fmt, go vet clean)
+✓ Execution time: 0.358s
+
+## Security Considerations
+- Sanitization order is critical (backslash first prevents double-escaping)
+- Context-based execution prevents hanging on permission dialogs
+- Stderr captured and included in error messages for debugging

@@ -1,0 +1,8 @@
+=== RUN   TestGenerateSessionName
+--- PASS: TestGenerateSessionName (0.00s)
+=== RUN   TestGenerateSessionNameUnique
+--- PASS: TestGenerateSessionNameUnique (0.00s)
+=== RUN   TestGenerateSessionNameCollisionCheck
+--- PASS: TestGenerateSessionNameCollisionCheck (0.00s)
+PASS
+ok  	github.com/riricardoMa/claude-grid/internal/session	0.170s

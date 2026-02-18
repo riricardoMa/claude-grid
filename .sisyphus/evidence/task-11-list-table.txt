@@ -1,0 +1,3 @@
+SESSION            BACKEND   WINDOWS  DIR                CREATED
+grid-a3f2 (stale)  terminal  4        ~/projects/my-app  2026-02-17 10:30
+grid-b1c4 (stale)  warp      2        ~/projects/api     2026-02-17 11:15

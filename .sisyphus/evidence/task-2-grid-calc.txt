@@ -1,0 +1,44 @@
+=== RUN   TestCalculateGrid
+=== RUN   TestCalculateGrid/count=1
+=== RUN   TestCalculateGrid/count=2
+=== RUN   TestCalculateGrid/count=3
+=== RUN   TestCalculateGrid/count=4
+=== RUN   TestCalculateGrid/count=5_(uniform_grid_with_1_empty_cell)
+=== RUN   TestCalculateGrid/count=6
+=== RUN   TestCalculateGrid/count=7_(uniform_grid_with_2_empty_cells)
+=== RUN   TestCalculateGrid/count=8
+=== RUN   TestCalculateGrid/count=9
+=== RUN   TestCalculateGrid/count=12
+=== RUN   TestCalculateGrid/count=16
+--- PASS: TestCalculateGrid (0.00s)
+    --- PASS: TestCalculateGrid/count=1 (0.00s)
+    --- PASS: TestCalculateGrid/count=2 (0.00s)
+    --- PASS: TestCalculateGrid/count=3 (0.00s)
+    --- PASS: TestCalculateGrid/count=4 (0.00s)
+    --- PASS: TestCalculateGrid/count=5_(uniform_grid_with_1_empty_cell) (0.00s)
+    --- PASS: TestCalculateGrid/count=6 (0.00s)
+    --- PASS: TestCalculateGrid/count=7_(uniform_grid_with_2_empty_cells) (0.00s)
+    --- PASS: TestCalculateGrid/count=8 (0.00s)
+    --- PASS: TestCalculateGrid/count=9 (0.00s)
+    --- PASS: TestCalculateGrid/count=12 (0.00s)
+    --- PASS: TestCalculateGrid/count=16 (0.00s)
+=== RUN   TestCalculateWindowBounds
+--- PASS: TestCalculateWindowBounds (0.00s)
+=== RUN   TestCalculateWindowBoundsWithEmptyCell
+--- PASS: TestCalculateWindowBoundsWithEmptyCell (0.00s)
+=== RUN   TestParseLayout
+=== RUN   TestParseLayout/valid_lowercase_2x3
+=== RUN   TestParseLayout/valid_uppercase_3X2
+=== RUN   TestParseLayout/invalid_format_abc
+=== RUN   TestParseLayout/invalid_zero_rows
+=== RUN   TestParseLayout/invalid_zero_cols
+=== RUN   TestParseLayout/invalid_negative
+--- PASS: TestParseLayout (0.00s)
+    --- PASS: TestParseLayout/valid_lowercase_2x3 (0.00s)
+    --- PASS: TestParseLayout/valid_uppercase_3X2 (0.00s)
+    --- PASS: TestParseLayout/invalid_format_abc (0.00s)
+    --- PASS: TestParseLayout/invalid_zero_rows (0.00s)
+    --- PASS: TestParseLayout/invalid_zero_cols (0.00s)
+    --- PASS: TestParseLayout/invalid_negative (0.00s)
+PASS
+ok  	github.com/riricardoMa/claude-grid/internal/grid	(cached)

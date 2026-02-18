@@ -1,0 +1,5 @@
+✓ .github/workflows/ci.yml: YAML is valid
+✓ .github/workflows/release.yml: YAML is valid
+✓ .goreleaser.yml: YAML is valid
+
+✓ All YAML files are valid

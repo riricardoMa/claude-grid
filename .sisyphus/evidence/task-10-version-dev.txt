@@ -1,0 +1,15 @@
+Task 10: Version Command - Without ldflags (dev mode)
+======================================================
+
+Command:
+go run . version
+
+Output:
+claude-grid dev (darwin/arm64) commit:unknown built:unknown
+
+Status: ✓ PASS
+- Version defaults to "dev" when ldflags not set
+- OS/arch correctly displayed: darwin/arm64
+- Commit defaults to "unknown"
+- Date defaults to "unknown"
+- Format matches specification with default values

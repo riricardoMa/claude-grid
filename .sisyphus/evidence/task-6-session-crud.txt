@@ -1,0 +1,26 @@
+=== RUN   TestGenerateSessionName
+--- PASS: TestGenerateSessionName (0.00s)
+=== RUN   TestGenerateSessionNameUnique
+--- PASS: TestGenerateSessionNameUnique (0.00s)
+=== RUN   TestGenerateSessionNameCollisionCheck
+--- PASS: TestGenerateSessionNameCollisionCheck (0.00s)
+=== RUN   TestSaveSession
+--- PASS: TestSaveSession (0.00s)
+=== RUN   TestLoadSession
+--- PASS: TestLoadSession (0.00s)
+=== RUN   TestLoadSessionNotFound
+--- PASS: TestLoadSessionNotFound (0.00s)
+=== RUN   TestListSessions
+--- PASS: TestListSessions (0.00s)
+=== RUN   TestListSessionsEmpty
+--- PASS: TestListSessionsEmpty (0.00s)
+=== RUN   TestDeleteSession
+--- PASS: TestDeleteSession (0.00s)
+=== RUN   TestDeleteSessionNotFound
+--- PASS: TestDeleteSessionNotFound (0.00s)
+=== RUN   TestAutoCreateDirectory
+--- PASS: TestAutoCreateDirectory (0.00s)
+=== RUN   TestSessionCRUDLifecycle
+--- PASS: TestSessionCRUDLifecycle (0.00s)
+PASS
+ok  	github.com/riricardoMa/claude-grid/internal/session	(cached)

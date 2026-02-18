@@ -1,0 +1,15 @@
+Task 10: Version Command - With ldflags
+==========================================
+
+Command:
+go run -ldflags "-X main.version=v0.1.0 -X main.commit=abc123 -X main.date=2026-02-17" . version
+
+Output:
+claude-grid v0.1.0 (darwin/arm64) commit:abc123 built:2026-02-17
+
+Status: ✓ PASS
+- Version correctly injected: v0.1.0
+- OS/arch correctly displayed: darwin/arm64
+- Commit hash correctly injected: abc123
+- Build date correctly injected: 2026-02-17
+- Format matches specification: claude-grid <version> (<os>/<arch>) commit:<commit> built:<date>
