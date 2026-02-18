@@ -99,6 +99,14 @@ func (b *WarpBackend) SpawnWindows(ctx context.Context, opts SpawnOptions) ([]Wi
 		return nil, err
 	}
 
+	command := opts.Command
+	if strings.TrimSpace(command) == "" {
+		command = "claude"
+	}
+	if err := b.sendCommandToWindows(ctx, opts.Count, command); err != nil {
+		return nil, fmt.Errorf("send command to warp windows: %w", err)
+	}
+
 	windows := make([]WindowInfo, opts.Count)
 	for i := 0; i < opts.Count; i++ {
 		windows[i] = WindowInfo{
@@ -188,6 +196,31 @@ func (b *WarpBackend) currentWindowCount(ctx context.Context) (int, error) {
 		return 0, fmt.Errorf("parse warp window count %q: %w", output, convErr)
 	}
 	return count, nil
+}
+
+func (b *WarpBackend) sendCommandToWindows(ctx context.Context, count int, command string) error {
+	sanitizedCmd := script.SanitizeForAppleScript(command)
+	lines := []string{
+		"tell application \"System Events\"",
+		"  tell process \"Warp\"",
+	}
+	for i := 1; i <= count; i++ {
+		lines = append(lines,
+			fmt.Sprintf("    set frontmost to true"),
+			fmt.Sprintf("    perform action \"AXRaise\" of window %d", i),
+			fmt.Sprintf("    delay 0.3"),
+			fmt.Sprintf("    keystroke \"%s\"", sanitizedCmd),
+			fmt.Sprintf("    keystroke return"),
+			fmt.Sprintf("    delay 0.2"),
+		)
+	}
+	lines = append(lines, "  end tell", "end tell")
+
+	_, err := b.executor.RunAppleScript(ctx, strings.Join(lines, "\n"))
+	if err != nil {
+		return wrapAccessibilityError(err)
+	}
+	return nil
 }
 
 func (b *WarpBackend) tileWindows(ctx context.Context, bounds []grid.WindowBounds) error {
