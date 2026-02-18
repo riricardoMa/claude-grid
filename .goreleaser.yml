@@ -43,8 +43,30 @@ changelog:
       - '^test:'
       - '^chore:'
 
-# Homebrew tap placeholder (Task 17 will configure this)
-# brews:
-#   - repository:
-#       owner: riricardoMa
-#       name: homebrew-tap
+brews:
+  - repository:
+      owner: riricardoMa
+      name: homebrew-tap
+      token: "{{ .Env.HOMEBREW_TAP_GITHUB_TOKEN }}"
+    
+    homepage: https://github.com/riricardoMa/claude-grid
+    
+    description: "Spawn and tile multiple Claude Code instances in a grid layout"
+    
+    license: MIT
+    
+    test: |
+      system "#{bin}/claude-grid", "version"
+    
+    install: |
+      bin.install "claude-grid"
+    
+    caveats: |
+      Requires Claude Code to be installed:
+        npm install -g @anthropic-ai/claude-code
+      
+      For Warp backend support, install Warp:
+        https://www.warp.dev
+      
+      First use with Warp requires Accessibility permission:
+        System Settings → Privacy & Security → Accessibility
