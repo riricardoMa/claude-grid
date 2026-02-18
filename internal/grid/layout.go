@@ -47,19 +47,34 @@ func CalculateGrid(count int) GridLayout {
 	sqrtVal := int(math.Ceil(math.Sqrt(float64(count))))
 
 	// Try layouts starting from sqrtVal rows, decreasing if needed
-	// Find the layout closest to square that is wider than tall
+	// Prefer perfect fit (0 wasted), then prefer closest to square
 	var bestLayout GridLayout
 	minDiff := count
+	minWasted := count
 
-	for rows := sqrtVal; rows >= 1; rows-- {
+	for rows := sqrtVal; rows >= 2; rows-- {
 		cols := int(math.Ceil(float64(count) / float64(rows)))
 		// Only consider layouts where cols >= rows (wider than tall)
 		if cols >= rows {
+			// Calculate wasted cells in this layout
+			wasted := rows*cols - count
 			// Calculate how close to square this layout is
 			diff := cols - rows
-			if diff < minDiff {
-				minDiff = diff
-				bestLayout = GridLayout{Rows: rows, Cols: cols}
+			// Prefer perfect fit (0 wasted), then prefer closest to square
+			if wasted == 0 {
+				// Perfect fit found, prefer closest to square among perfect fits
+				if wasted < minWasted || (wasted == minWasted && diff < minDiff) {
+					minDiff = diff
+					minWasted = wasted
+					bestLayout = GridLayout{Rows: rows, Cols: cols}
+				}
+			} else if minWasted > 0 {
+				// No perfect fit yet, prefer closest to square
+				if diff < minDiff || (diff == minDiff && wasted < minWasted) {
+					minDiff = diff
+					minWasted = wasted
+					bestLayout = GridLayout{Rows: rows, Cols: cols}
+				}
 			}
 		}
 	}
