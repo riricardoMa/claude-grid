@@ -2,6 +2,8 @@
 
 > Spawn and tile multiple Claude Code instances in a grid layout with a single command.
 
+![alt text](image.png)
+
 ## Features
 
 - 🚀 **One-command launch**: `claude-grid 4` spawns 4 tiled terminal windows
