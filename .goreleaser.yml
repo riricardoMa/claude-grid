@@ -27,7 +27,7 @@ universal_binaries:
 
 archives:
   - id: claude-grid
-    name_template: "{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}.tar.gz"
+    name_template: "{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}"
     files:
       - README.md
       - LICENSE
@@ -48,6 +48,7 @@ brews:
       owner: riricardoMa
       name: homebrew-tap
       token: "{{ .Env.HOMEBREW_TAP_GITHUB_TOKEN }}"
+    directory: Formula
     
     homepage: https://github.com/riricardoMa/claude-grid
     
