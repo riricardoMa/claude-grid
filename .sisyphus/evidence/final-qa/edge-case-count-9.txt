@@ -1,0 +1,20 @@
+=== Edge Case: count=9 ===
+Date: 2026-02-17
+
+Command: /tmp/claude-grid 9 --terminal terminal --name nine-test
+Output:
+  Detected: darwin, terminal terminal, screen 1728x1117
+  Layout: 3x3 grid (576x372 per window)
+  Spawning 9 Claude Code instances...
+  Session "nine-test" created.
+Exit Code: 0
+
+Expected: 3×3 grid, 9 windows
+Actual: 3×3 grid (576x372 per window) ✓
+List: SESSION nine-test, 9 windows ✓
+Kill: Success, 9 windows closed ✓
+
+Note: 576x372 per window is small but functional.
+Small window warning may/may not appear (depends on threshold).
+
+VERDICT: PASS

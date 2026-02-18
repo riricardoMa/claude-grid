@@ -1,0 +1,16 @@
+=== Edge Case: count=1 ===
+Date: 2026-02-17
+
+Command: /tmp/claude-grid 1 --terminal terminal --name single-test
+Output:
+  Detected: darwin, terminal terminal, screen 1728x1117
+  Layout: 1x1 grid (1728x1117 per window)
+  Spawning 1 Claude Code instances...
+  Session "single-test" created.
+Exit Code: 0
+
+Expected: 1 window, 1×1 grid, fullscreen-ish size
+Actual: 1728x1117 = full usable area ✓
+Kill: Success, 1 window closed ✓
+
+VERDICT: PASS

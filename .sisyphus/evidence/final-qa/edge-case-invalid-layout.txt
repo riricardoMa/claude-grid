@@ -1,0 +1,12 @@
+=== Edge Case: Invalid Layout (0x0) ===
+Date: 2026-02-17
+
+Command: /tmp/claude-grid 4 --layout 0x0
+Output: invalid layout "0x0": rows and cols must be positive (got 0x0)
+Exit Code: 1
+
+Expected: Error message about invalid layout, exit code 1
+Actual: Matches expected ✓
+Error message is descriptive and includes the invalid values.
+
+VERDICT: PASS

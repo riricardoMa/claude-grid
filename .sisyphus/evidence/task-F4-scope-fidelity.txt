@@ -1,0 +1,218 @@
+=== SCOPE FIDELITY CHECK ===
+
+=== PER-TASK VERIFICATION ===
+
+Task 1: Project Scaffolding
+Spec Requirements:
+  - go.mod module github.com/riricardoMa/claude-grid: PRESENT
+  - main.go version vars + root command execution: PRESENT
+  - cmd/root.go exists with persistent --verbose/--version: PRESENT
+  - directory scaffold cmd/, internal/{grid,screen,terminal,session,script}: PRESENT
+Scope Creep: NONE (later root orchestration additions are accounted by Task 13)
+Must NOT do Violations: NONE
+Contamination: FOUND in commit 948d81b (Task 1 commit also touched Task 2/4/5 files)
+Overall: FAIL (contamination)
+
+Task 2: Grid Layout Calculator (TDD)
+Spec Requirements:
+  - internal/grid/layout.go with CalculateGrid, CalculateWindowBounds, ParseLayout: PRESENT
+  - internal/grid/layout_test.go table-driven tests for PRD mappings and parse cases: PRESENT
+  - uniform-grid behavior for 5 and 7 (empty cells): PRESENT
+Scope Creep: NONE
+Must NOT do Violations: NONE
+Contamination: FOUND in commit 948d81b (Task 2 files touched during Task 1 commit)
+Overall: FAIL (contamination)
+
+Task 3: AppleScript Executor Utility (TDD)
+Spec Requirements:
+  - ScriptExecutor interface + OSAExecutor implementation: PRESENT
+  - SanitizeForAppleScript escaping order (\\ then "): PRESENT
+  - timeout via context.WithTimeout + osascript -e + stdout/stderr capture: PRESENT
+Scope Creep: NONE
+Must NOT do Violations: NONE
+Contamination: NONE
+Overall: PASS
+
+Task 4: macOS Screen Detection via AppleScript (TDD)
+Spec Requirements:
+  - internal/screen/detect.go with //go:build darwin: PRESENT
+  - DetectScreen parsing Finder bounds {left,top,right,bottom}: PRESENT
+  - internal/screen/detect_test.go mock-based parsing/error tests: PRESENT
+Scope Creep: NONE
+Must NOT do Violations: NONE (no CGO/CoreGraphics/AppKit)
+Contamination: FOUND in commit 948d81b (Task 4 files touched during Task 1 commit)
+Overall: FAIL (contamination)
+
+Task 5: TerminalBackend Interface + Types
+Spec Requirements:
+  - TerminalBackend methods Name/Available/SpawnWindows/CloseSession: PRESENT
+  - SpawnOptions and WindowInfo types: PRESENT
+  - DetectBackend(preferred) with Warp->Terminal auto order: PRESENT
+Scope Creep: NONE
+Must NOT do Violations: NONE (no SendKeys/Tile methods)
+Contamination: FOUND in commits 948d81b and 64be8f5 (file touched outside Task 5/6 scope)
+Overall: FAIL (contamination)
+
+Task 6: Session Storage (TDD)
+Spec Requirements:
+  - Session + WindowRef structs and JSON CRUD store: PRESENT
+  - GenerateSessionName grid-XXXX with collision check: PRESENT
+  - test coverage for CRUD and auto-mkdir using temp dirs: PRESENT
+Scope Creep: NONE
+Must NOT do Violations: NONE
+Contamination: NONE
+Overall: PASS
+
+Task 7: Makefile
+Spec Requirements:
+  - build/test/vet/clean/install/check targets with ldflags injection: PRESENT
+Scope Creep: NONE
+Must NOT do Violations: NONE
+Contamination: NONE
+Overall: PASS
+
+Task 8: Terminal.app Backend (TDD)
+Spec Requirements:
+  - TerminalAppBackend Name/Available/SpawnWindows/CloseSession: PRESENT
+  - one tell block with do script + front window id + bounds conversion {l,t,r,b}: PRESENT
+  - tests for script generation, escaping, graceful close: PRESENT
+Scope Creep: NONE
+Must NOT do Violations: NONE
+Contamination: NONE
+Overall: PASS
+
+Task 9: Warp Backend (TDD)
+Spec Requirements:
+  - Warp URI spawn + backoff polling + System Events tiling helper: PRESENT
+  - URL encoding and accessibility guidance path: PRESENT
+  - CloseSession should close windows matching session (best-effort by session): MISSING
+Scope Creep: NONE
+Must NOT do Violations: NONE
+Contamination: NONE
+Overall: FAIL (missing required CloseSession session-scoped behavior)
+
+Task 10: Version Command
+Spec Requirements:
+  - cmd/version.go subcommand with expected output format: PRESENT
+  - registered from root via NewVersionCmd(version, commit, date): PRESENT
+Scope Creep: NONE
+Must NOT do Violations: NONE
+Contamination: NONE
+Overall: PASS
+
+Task 11: List Command
+Spec Requirements:
+  - cmd/list.go loads sessions and prints tabular output: PRESENT
+  - liveness checks (Terminal window IDs, Warp window count): PRESENT
+  - stale marker and no-session message: PRESENT
+Scope Creep: NONE
+Must NOT do Violations: NONE
+Contamination: NONE
+Overall: PASS
+
+Task 12: CI + goreleaser Config
+Spec Requirements:
+  - .github/workflows/ci.yml test/build/vet on macos-latest: PRESENT
+  - .github/workflows/release.yml tag-triggered goreleaser release: PRESENT
+  - .goreleaser.yml darwin-only, cgo disabled, universal/archive/checksum/changelog: PRESENT
+Scope Creep: MINOR (extra before.hooks go mod tidy)
+Must NOT do Violations: NONE (no Docker/Linux/Windows targets)
+Contamination: NONE
+Overall: PASS
+
+Task 13: Root Command Wiring
+Spec Requirements:
+  - cmd/root.go orchestration (count parse, flags, claude lookup, screen/grid/bounds/backend/spawn/save): PRESENT
+  - fallback screen warning, backend errors, spawn failure cleanup, min-size warning: PRESENT
+  - summary output and success path: PRESENT
+Scope Creep: NONE
+Must NOT do Violations: NONE (no prompt/config flags, no ASCII art/emoji in CLI output)
+Contamination: FOUND in commit 88250af (cmd/root.go touched before Task 13 commit)
+Overall: FAIL (contamination)
+
+Task 14: Kill Command
+Spec Requirements:
+  - cmd/kill.go command, session lookup, backend dispatch, close+delete flow: PRESENT
+  - missing-session error and graceful partial failures: PRESENT
+  - wired into root command: PRESENT
+Scope Creep: NONE
+Must NOT do Violations: NONE
+Contamination: NONE
+Overall: PASS
+
+Task 15: End-to-End Integration QA
+Spec Requirements:
+  - verification-only deliverables in evidence files: PRESENT
+Scope Creep: NONE
+Must NOT do Violations: NONE (no implementation file additions for this task)
+Contamination: NONE
+Overall: PASS
+
+Task 16: README
+Spec Requirements:
+  - rewritten README with install/usage/prereqs/commands/support/accessibility/license: PRESENT
+  - flags reference table: MISSING (flags documented as bullets, no table)
+  - concise length under 200 lines: MISSING (README is 272 lines)
+Scope Creep: MINOR (feature-heavy narrative beyond concise MVP doc target)
+Must NOT do Violations: NONE (no badges/comparison table/architecture guide)
+Contamination: NONE
+Overall: FAIL (missing required sections/constraints)
+
+Task 17: Homebrew Formula in goreleaser
+Spec Requirements:
+  - .goreleaser.yml brews section with tap metadata/install/test: PRESENT
+  - preserve valid config after brew addition: PRESENT (evidence file exists)
+  - note about manual tap repo setup if missing: MISSING
+Scope Creep: FOUND (extra token/caveats fields not requested by task spec)
+Must NOT do Violations: NONE (formula, not cask)
+Contamination: NONE
+Overall: FAIL (missing requirement + scope creep)
+
+=== CROSS-TASK CONTAMINATION ===
+
+- Commit 948d81b (Task 1 message) modified Task 2/4/5 files:
+  - internal/grid/layout.go
+  - internal/grid/layout_test.go
+  - internal/screen/detect.go
+  - internal/screen/detect_test.go
+  - internal/terminal/backend.go
+- Commit 88250af (Wave 2) modified cmd/root.go before Task 13 assigned scope.
+- Commit 64be8f5 (Wave 3) modified internal/terminal/backend.go (Task 5 ownership) while implementing Task 13/14.
+
+Status: 3 contamination issues detected.
+
+=== UNACCOUNTED FILES ===
+
+Scope: **/*.go, **/*.md, Makefile, .github/**/*, .goreleaser.yml
+Result: CLEAN
+- All files in scoped patterns are either task-accounted or explicitly allowed (.sisyphus/*, prd.md, .gitignore).
+
+=== GLOBAL MUST-NOT GUARDRAILS CHECK ===
+
+- CGO import "C": ABSENT
+- SendKeys / separate Tile method: ABSENT (only comment reference to no-Tile policy)
+- Forbidden flags (--program/--gap/--no-tile/--prompt*): ABSENT in implementation
+- resume command: ABSENT
+- config file support (~/.claude-grid.toml): ABSENT
+- Warp Launch Config YAML/panes mode: ABSENT
+- iTerm2/Kitty/tmux backends: ABSENT
+
+=== SUMMARY ===
+
+Tasks Reviewed: 17
+Compliant: 11/17
+Missing Items: 5 instances
+Scope Creep: 2 instances
+Must NOT do Violations: 0 instances
+Contamination: 3 issues
+Unaccounted Files: CLEAN
+
+Tasks [11/17 compliant] | Contamination [3 issues] | Unaccounted [CLEAN] | VERDICT [REJECT]
+
+VERDICT: REJECT
+
+Rejection Reasons:
+- Task 9: CloseSession is not session-scoped; it closes all Warp windows regardless of sessionID.
+- Task 16: README exceeds 200 lines and lacks required flags reference table.
+- Task 17: Missing required manual-tap setup note; includes non-specified brew fields.
+- Cross-task contamination present across Task 1/2/4/5/13 commit boundaries.

@@ -1,0 +1,11 @@
+=== Edge Case: count=0 ===
+Date: 2026-02-17
+
+Command: /tmp/claude-grid 0
+Output: invalid count 0: must be between 1 and 16
+Exit Code: 1
+
+Expected: Error message, exit code 1
+Actual: Matches expected ✓
+
+VERDICT: PASS

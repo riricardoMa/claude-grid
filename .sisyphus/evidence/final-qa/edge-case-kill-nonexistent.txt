@@ -1,0 +1,12 @@
+=== Edge Case: Kill Nonexistent Session ===
+Date: 2026-02-17
+
+Command: /tmp/claude-grid kill fake-session
+Output: Session 'fake-session' not found. Run 'claude-grid list' to see active sessions.
+Exit Code: 1
+
+Expected: Error message, exit code 1
+Actual: Matches expected ✓
+Error message is descriptive and suggests using 'list' ✓
+
+VERDICT: PASS

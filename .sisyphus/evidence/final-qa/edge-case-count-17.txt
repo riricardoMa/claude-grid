@@ -1,0 +1,11 @@
+=== Edge Case: count=17 ===
+Date: 2026-02-17
+
+Command: /tmp/claude-grid 17
+Output: invalid count 17: must be between 1 and 16
+Exit Code: 1
+
+Expected: Error message about max 16, exit code 1
+Actual: Matches expected ✓
+
+VERDICT: PASS

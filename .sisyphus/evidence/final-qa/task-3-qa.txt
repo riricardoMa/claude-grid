@@ -1,0 +1,34 @@
+=== Task 3: AppleScript Executor QA ===
+Date: 2026-02-17
+
+Scenario 1: AppleScript string sanitization prevents injection
+Command: go test ./internal/script/ -v -run TestSanitize
+Result: PASS (14/14 subtests)
+  Empty string ✓
+  Simple text ✓
+  Backslash only ✓
+  Double quote only ✓
+  Backslash then quote ✓
+  Path with spaces ✓
+  Path with backslash ✓
+  Quoted string ✓
+  Dollar sign ✓
+  Semicolon ✓
+  Complex path with quotes and backslashes ✓
+  Multiple backslashes ✓
+  Multiple quotes ✓
+  Mixed special chars ✓
+
+Scenario 2: Executor respects timeout
+Command: go test ./internal/script/ -v -run TestTimeout
+Result: PASS
+  Context cancellation propagates correctly ✓
+  OSAExecutor timeout test passes ✓
+
+Scenario 3: Real AppleScript execution
+Command: go test ./internal/script/ -v -run TestOSAExecutor
+Result: PASS (2/2 subtests)
+  Simple echo command ✓
+  Invalid AppleScript returns error ✓
+
+VERDICT: PASS

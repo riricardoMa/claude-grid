@@ -1,0 +1,16 @@
+=== Task 10: Version Command QA ===
+Date: 2026-02-17
+
+Scenario 1: Version command output format
+Command: /tmp/claude-grid version
+Output: claude-grid dev (darwin/arm64) commit:unknown built:unknown
+Result: PASS
+  Format matches: "<name> <version> (<os>/<arch>) commit:<commit> built:<date>" ✓
+  Default values (dev, unknown, unknown) when no ldflags ✓
+
+Scenario 2: Help output includes version subcommand
+Command: /tmp/claude-grid --help
+Output includes: "version     Show version information"
+Result: PASS
+
+VERDICT: PASS

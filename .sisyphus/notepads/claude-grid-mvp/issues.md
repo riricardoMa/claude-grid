@@ -30,3 +30,31 @@
 ### Exit Code for Invalid Count (minor)
 - `claude-grid 0` prints error but exits with code 0
 - Should return non-zero exit code for scripting compatibility
+
+## [2026-02-17] Task F2: Code Quality Review
+
+### Minor Issues (non-blocking)
+- `internal/screen/detect.go:22` — Non-idiomatic timeout: `10*1000*1000*1000` instead of `10*time.Second`. Works correctly but could import `time` package for clarity.
+- Duplicate `ScreenInfo` types in `grid` and `screen` packages with manual field copy in `root.go:103-108`. Deliberate package independence tradeoff.
+
+### Positive Findings
+- Zero `fmt.Println` in production code — all output through `cmd.OutOrStdout()`/`cmd.ErrOrStderr()`
+- Zero `interface{}` usage — all concrete types or well-defined interfaces
+- Zero empty error checks — all `if err != nil` blocks take action
+- Zero dead code — all functions used
+- Zero AI slop — no excessive comments, no generic names, no over-abstraction
+- 38 tests across 5 packages, all passing
+## [2026-02-17] Task F4: Scope Fidelity Check
+
+### Scope Violations (blocking)
+- Task 9 (`internal/terminal/warp.go`) CloseSession ignores `sessionID` and closes all Warp windows; spec requires session-scoped best-effort close.
+- Task 16 (`README.md`) exceeds 200-line limit (272 lines) and is missing required flags reference table.
+- Task 17 (`.goreleaser.yml`) missing explicit manual homebrew-tap setup note; includes extra brew fields (`token`, `caveats`) outside strict task spec.
+
+### Cross-Task Contamination
+- Commit `948d81b` (Task 1 message) touched Task 2/4/5 files (`internal/grid/*`, `internal/screen/*`, `internal/terminal/backend.go`).
+- Commit `88250af` touched `cmd/root.go` before Task 13 ownership window.
+- Commit `64be8f5` (Task 13/14 wave commit) also touched Task 5 file `internal/terminal/backend.go`.
+
+### Unaccounted Files
+- CLEAN for scoped inventory (`**/*.go`, `**/*.md`, `Makefile`, `.github/**/*`, `.goreleaser.yml`).

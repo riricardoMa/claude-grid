@@ -1,0 +1,30 @@
+=== Task 8: Terminal.app Backend QA ===
+Date: 2026-02-17
+
+Scenario 1: Generated AppleScript is correct for 2 windows
+Command: go test ./internal/terminal/ -v -run TestTerminalAppSpawnScript
+Result: PASS
+  Contains 2x `do script` ✓
+  Contains 2x `set bounds` ✓
+  Bounds in {left, top, right, bottom} format ✓
+  Window IDs captured via `id of front window` ✓
+
+Scenario 2: Path with spaces is properly escaped
+Command: go test ./internal/terminal/ -v -run TestTerminalAppEscaping
+Result: PASS
+  Path appears as escaped string in AppleScript ✓
+
+Scenario 3: CloseSession handles already-closed windows gracefully
+Command: go test ./internal/terminal/ -v -run TestTerminalAppCloseGraceful
+Result: PASS
+  Closes available windows, ignores missing ✓
+  No panic on missing window ✓
+
+Scenario 4: Interface compliance
+  TestTerminalAppName → "terminal" ✓
+  TestTerminalAppAvailable → true ✓
+  TestTerminalAppImplementsInterface → compiles ✓
+
+Total: 6/6 tests pass
+
+VERDICT: PASS

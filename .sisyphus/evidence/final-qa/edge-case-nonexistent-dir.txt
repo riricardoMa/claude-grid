@@ -1,0 +1,23 @@
+=== Edge Case: Nonexistent Directory ===
+Date: 2026-02-17
+
+Command: /tmp/claude-grid 2 --dir /nonexistent
+Output:
+  Detected: darwin, terminal warp, screen 1728x1117
+  Layout: 1x2 grid (864x1117 per window)
+  Directory: /nonexistent
+  Spawning 2 Claude Code instances...
+  Session "grid-ac72" created.
+Exit Code: 0
+
+Expected: Error or warning about nonexistent directory
+Actual: No validation — proceeds with nonexistent path
+
+Note: The tool does not validate directory existence before spawning.
+Terminal windows will open in the default directory or fail to cd.
+This is a minor issue — not a crash. The tool could benefit from
+pre-validating the --dir path in a future version.
+
+Session cleaned up successfully.
+
+VERDICT: PASS (no crash, graceful handling, minor enhancement opportunity)

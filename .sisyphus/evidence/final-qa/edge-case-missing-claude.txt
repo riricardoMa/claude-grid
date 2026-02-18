@@ -1,0 +1,19 @@
+=== Edge Case: Missing Claude Binary ===
+Date: 2026-02-17
+
+Method: Temporarily renamed ALL claude binaries:
+  - /Users/boxiangma/.local/bin/claude → .bak
+  - /Users/boxiangma/.bun/bin/claude → .bak
+
+Command: /tmp/claude-grid 2 --name no-claude2
+Output:
+  'claude' not found in PATH. Install: npm install -g @anthropic-ai/claude-code
+  Or specify a different location (v0.2).
+Exit Code: 1
+
+Expected: Error message about missing claude, exit code 1
+Actual: Matches expected ✓
+Error message includes install instructions ✓
+Binaries restored after test ✓
+
+VERDICT: PASS

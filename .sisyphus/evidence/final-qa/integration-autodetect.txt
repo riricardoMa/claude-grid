@@ -1,0 +1,35 @@
+=== Integration Test: Auto-Detection ===
+Date: 2026-02-17
+
+Step 1: Clean state
+Command: rm -rf ~/.claude-grid/sessions/
+Result: Clean ✓
+
+Step 2: Spawn without --terminal flag
+Command: /tmp/claude-grid 2 --name autodetect-test
+Output:
+  Detected: darwin, terminal warp, screen 1728x1117
+  Layout: 1x2 grid (864x1117 per window)
+  Spawning 2 Claude Code instances...
+  Session "autodetect-test" created.
+Exit Code: 0
+Backend Selected: warp (auto-detected, correct — Warp is installed)
+Result: PASS ✓
+
+Step 3: Verify via list
+Command: /tmp/claude-grid list
+Output:
+  SESSION          BACKEND  WINDOWS  DIR                             CREATED
+  autodetect-test  warp     2        ~/Documents/GitHub/claude-grid  2026-02-17 22:35
+Backend confirmed: warp ✓
+Result: PASS ✓
+
+Step 4: Cleanup
+Command: /tmp/claude-grid kill autodetect-test
+Output: Warning about Warp close limitation (-1708), but session deleted.
+Exit Code: 0
+Result: PASS ✓
+
+Auto-detection logic: Warp installed → selected Warp. Correct per spec (Warp > Terminal.app).
+
+VERDICT: PASS

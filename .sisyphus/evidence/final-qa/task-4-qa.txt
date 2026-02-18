@@ -1,0 +1,30 @@
+=== Task 4: Screen Detection QA ===
+Date: 2026-02-17
+
+Scenario 1: Screen detection parses Finder bounds correctly
+Command: go test ./internal/screen/ -v -run TestDetectScreen
+Result: PASS (8/8 subtests)
+  Standard bounds "0, 25, 2560, 1575" → {X:0, Y:25, W:2560, H:1550} ✓
+  Different origin ✓
+  No spaces format ✓
+  Extra spaces format ✓
+  Invalid format (not enough values) → error ✓
+  Non-numeric values → error ✓
+  Executor error → wrapped error ✓
+  Empty output → error ✓
+
+Scenario 2: Bounds calculation verification
+Command: go test ./internal/screen/ -v -run TestDetectScreenBoundsCalculation
+Result: PASS
+  Width = right - left ✓
+  Height = bottom - top ✓
+
+Scenario 3: Live screen detection
+Command: osascript -e 'tell application "Finder" to get bounds of window of desktop'
+Output: 0, 0, 1728, 1117
+Result: PASS
+  Returns 4 comma-separated integers ✓
+  Width = 1728 > 0 ✓
+  Height = 1117 > 0 ✓
+
+VERDICT: PASS

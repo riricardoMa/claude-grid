@@ -1,0 +1,40 @@
+=== Task 9: Warp Backend QA ===
+Date: 2026-02-17
+
+Scenario 1: Warp URI construction is correct
+Command: go test ./internal/terminal/ -v -run TestWarpURIConstruction
+Result: PASS
+  Path with spaces properly URL-encoded ✓
+  Slashes preserved ✓
+
+Scenario 2: System Events tiling script is correct
+Command: go test ./internal/terminal/ -v -run TestWarpTilingScript
+Result: PASS
+  `set position of window X to {posX, posY}` for each window ✓
+  `set size of window X to {W, H}` for each window ✓
+
+Scenario 3: Exponential backoff waits for correct window count
+Command: go test ./internal/terminal/ -v -run TestWarpBackoff
+Result: PASS
+  Polling stops when count reaches target ✓
+  No timeout error on success ✓
+
+Scenario 4: Accessibility error produces clear message
+Command: go test ./internal/terminal/ -v -run TestWarpAccessibilityError
+Result: PASS
+  Error mentions Accessibility permission ✓
+
+Scenario 5: Spawn window scenarios
+Command: go test ./internal/terminal/ -v -run TestWarpSpawnWindowsScenarios
+Result: PASS (3/3 subtests)
+  Single window success ✓
+  Multiple windows success ✓
+  Open error handled ✓
+
+Scenario 6: Close session
+Command: go test ./internal/terminal/ -v -run TestWarpCloseSession
+Result: PASS
+
+Total: 14/14 Warp tests pass
+
+VERDICT: PASS

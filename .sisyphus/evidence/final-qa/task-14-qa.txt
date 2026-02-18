@@ -1,0 +1,25 @@
+=== Task 14: Kill Command QA ===
+Date: 2026-02-17
+
+Scenario 1: Kill Terminal.app session
+Command: /tmp/claude-grid kill integration-test
+Output: Session 'integration-test' killed. 4 windows closed.
+Exit Code: 0
+Result: PASS ✓
+  - Session file deleted ✓
+  - List shows empty after kill ✓
+
+Scenario 2: Kill Warp session
+Command: /tmp/claude-grid kill warp-test
+Output: Session 'warp-test' killed. 2 windows closed.
+Exit Code: 0
+Result: PASS ✓
+  Note: Warp close shows warning (-1708) but session file still deleted
+
+Scenario 3: Kill nonexistent session
+Command: /tmp/claude-grid kill fake-session
+Output: Session 'fake-session' not found. Run 'claude-grid list' to see active sessions.
+Exit Code: 1
+Result: PASS ✓
+
+VERDICT: PASS

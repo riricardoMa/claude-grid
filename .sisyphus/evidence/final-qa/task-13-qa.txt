@@ -1,0 +1,45 @@
+=== Task 13: Root Command Wiring QA ===
+Date: 2026-02-17
+
+Scenario 1: End-to-end spawn (Terminal.app)
+Command: /tmp/claude-grid 4 --terminal terminal --name integration-test
+Output:
+  Detected: darwin, terminal terminal, screen 1728x1117
+  Layout: 2x2 grid (864x558 per window)
+  Spawning 4 Claude Code instances...
+  Session "integration-test" created.
+Exit Code: 0
+Result: PASS ✓
+  - Screen detection works ✓
+  - Grid calculation works ✓
+  - Backend selection works ✓
+  - Session storage works ✓
+  - Window spawning works ✓
+
+Scenario 2: End-to-end spawn (Warp)
+Command: /tmp/claude-grid 2 --terminal warp --name warp-test
+Output:
+  Detected: darwin, terminal warp, screen 1728x1117
+  Layout: 1x2 grid (864x1117 per window)
+  Spawning 2 Claude Code instances...
+  Session "warp-test" created.
+Exit Code: 0
+Result: PASS ✓
+
+Scenario 3: Auto-detection
+Command: /tmp/claude-grid 2 --name autodetect-test
+Output: Selected warp (auto-detected)
+Result: PASS ✓ (Warp installed → Warp selected)
+
+Scenario 4: Missing claude binary
+Command: (with claude renamed) /tmp/claude-grid 2
+Output: 'claude' not found in PATH. Install: npm install -g @anthropic-ai/claude-code
+Exit Code: 1
+Result: PASS ✓ (fails fast, descriptive error)
+
+Scenario 5: Help output
+Command: /tmp/claude-grid --help
+Output: Contains usage, subcommands (version, list, kill), all flags
+Result: PASS ✓
+
+VERDICT: PASS

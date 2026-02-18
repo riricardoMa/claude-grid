@@ -1,0 +1,16 @@
+=== Task 11: List Command QA ===
+Date: 2026-02-17
+
+Scenario 1: List with no sessions
+Command: rm -rf ~/.claude-grid/sessions/ && /tmp/claude-grid list
+Output: No active sessions.
+Result: PASS
+  Empty state handled gracefully ✓
+  No crash on missing directory ✓
+
+Scenario 2: Help includes list subcommand
+Command: /tmp/claude-grid --help
+Output includes: "list        List all active sessions"
+Result: PASS
+
+VERDICT: PASS (full lifecycle tested in integration phase)

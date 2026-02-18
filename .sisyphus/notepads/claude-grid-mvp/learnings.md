@@ -321,3 +321,24 @@ Plan initialized. Wave 1 starting: 7 parallel tasks (scaffolding, grid calc, App
 ### Auto-detect Behavior
 - When Warp is the frontmost terminal, auto-detect selects Warp for all tests
 - Terminal.app test required explicit `--terminal terminal` flag to override
+
+## [2026-02-17] Task F3: Final QA
+
+### Exit Code Fix Confirmed
+- count=0 and count=17 now correctly return exit code 1 (was 0 in earlier testing)
+- All error paths return exit 1 as expected
+
+### Warp Close Limitation Confirmed
+- Warp still returns -1708 error on close message via System Events
+- Session file deletion still works correctly despite close failure
+- Kill command reports success even when Warp windows stay open
+
+### Missing Claude Detection Robust
+- Two claude binaries found on test system (.local/bin and .bun/bin)
+- Both must be absent for detection to trigger
+- Error message includes install instructions: npm install -g @anthropic-ai/claude-code
+
+### Nonexistent Dir Not Validated
+- --dir /nonexistent proceeds without error
+- Terminal opens in fallback directory
+- Minor enhancement opportunity, not a bug

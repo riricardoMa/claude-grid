@@ -1,0 +1,11 @@
+=== BUILD EVIDENCE ===
+Date: $(date -u +%Y-%m-%dT%H:%M:%SZ)
+
+Command: go build -o /tmp/claude-grid .
+Exit Code: 0
+Binary: /tmp/claude-grid (Mach-O 64-bit executable arm64, 4720018 bytes)
+
+Version Output:
+claude-grid dev (darwin/arm64) commit:unknown built:unknown
+
+VERDICT: PASS

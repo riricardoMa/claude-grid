@@ -1,0 +1,13 @@
+=== Edge Case: List with No Sessions ===
+Date: 2026-02-17
+
+Setup: rm -rf ~/.claude-grid/sessions/
+Command: /tmp/claude-grid list
+Output: No active sessions.
+Exit Code: 0
+
+Expected: "No active sessions" message, exit code 0
+Actual: Matches expected ✓
+Handles missing sessions directory gracefully ✓
+
+VERDICT: PASS
