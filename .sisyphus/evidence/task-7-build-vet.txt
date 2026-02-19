@@ -1,0 +1,12 @@
+Task 7: Root worktree wiring - build/vet verification
+=====================================================
+
+Command:
+go build ./... && go vet ./...
+
+Result:
+- go build: PASS
+- go vet: PASS
+
+Notes:
+- Validation run after integrating `--worktrees` / `--branch-prefix` flags and spawn/session wiring.

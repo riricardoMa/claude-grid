@@ -1,0 +1,18 @@
+Task 5: Backward Compatibility Evidence
+========================================
+Date: 2026-02-18
+
+Backward Compatibility Verification:
+1. Existing test TestTerminalAppSpawnScript uses opts.Dir (single dir) → PASS
+   - SpawnWindows fills dirs slice with opts.Dir for all windows
+2. TestTerminalAppEscaping uses opts.Dir → PASS
+   - Escaping still works through dirs[i] path
+3. TestBuildSpawnScriptPerWindowDirsBackwardCompat explicitly verifies:
+   - opts.Dir="/tmp/single-dir" with no opts.Dirs set
+   - Confirms dir appears in script for ALL 2 windows (count=2)
+4. All existing tests unchanged and passing
+
+Logic:
+- if len(opts.Dirs) > 0 → use opts.Dirs (per-window)
+- else → fill dirs slice with opts.Dir (uniform)
+- buildSpawnScript always receives dirs []string

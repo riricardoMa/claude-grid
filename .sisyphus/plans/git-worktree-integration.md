@@ -935,7 +935,7 @@ Max Concurrent: 4 (Wave 1)
   - Files: `cmd/list.go`
   - Pre-commit: `go build ./...`
 
-- [ ] 11. Integration Test — Full Worktree Lifecycle QA
+- [x] 11. Integration Test — Full Worktree Lifecycle QA
 
   **What to do**:
   - Create `internal/git/integration_test.go` with build tag `//go:build integration`
@@ -982,7 +982,7 @@ Max Concurrent: 4 (Wave 1)
 
   **Acceptance Criteria**:
 
-  - [ ] `go test -tags integration ./internal/git/...` → PASS (10+ tests)
+  - [x] `go test -tags integration ./internal/git/...` → PASS (10+ tests)
 
   **QA Scenarios:**
 

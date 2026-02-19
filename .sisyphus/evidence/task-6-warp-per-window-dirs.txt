@@ -1,0 +1,39 @@
+Task 6: Warp Per-Window Dirs
+==============================
+
+Changes Made:
+- internal/terminal/warp.go: SpawnWindows prepares dirs slice from opts.Dirs/opts.Dir, 
+  constructs per-window URI inside spawn loop using dirs[i]
+- internal/terminal/warp_test.go: Added TestWarpPerWindowDirs with 3 subtests
+
+Test Results (go test ./internal/terminal/... -v -run TestWarp):
+=== RUN   TestWarpName
+--- PASS: TestWarpName (0.00s)
+=== RUN   TestWarpAvailable
+--- PASS: TestWarpAvailable (0.00s)
+=== RUN   TestWarpURIConstruction
+--- PASS: TestWarpURIConstruction (0.00s)
+=== RUN   TestWarpTilingScript
+--- PASS: TestWarpTilingScript (0.00s)
+=== RUN   TestWarpBackoff
+--- PASS: TestWarpBackoff (0.00s)
+=== RUN   TestWarpAccessibilityError
+--- PASS: TestWarpAccessibilityError (0.00s)
+=== RUN   TestWarpSpawnWindowsScenarios
+--- PASS: TestWarpSpawnWindowsScenarios (0.00s)
+=== RUN   TestWarpPerWindowDirs
+=== RUN   TestWarpPerWindowDirs/dirs_override_produces_per-window_URIs
+=== RUN   TestWarpPerWindowDirs/empty_dirs_falls_back_to_Dir_for_all_windows
+=== RUN   TestWarpPerWindowDirs/dirs_with_spaces_are_encoded_correctly
+--- PASS: TestWarpPerWindowDirs (0.00s)
+=== RUN   TestWarpCloseSession
+--- PASS: TestWarpCloseSession (0.00s)
+PASS
+ok  	github.com/riricardoMa/claude-grid/internal/terminal	0.252s
+
+All existing tests pass. No regressions.
+
+Test Coverage:
+1. dirs_override_produces_per-window_URIs: 3 different dirs -> 3 different URIs verified
+2. empty_dirs_falls_back_to_Dir_for_all_windows: no Dirs set -> all URIs use Dir
+3. dirs_with_spaces_are_encoded_correctly: spaces in paths -> %20 encoding verified

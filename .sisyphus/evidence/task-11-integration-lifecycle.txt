@@ -1,0 +1,114 @@
+=== RUN   TestFullLifecycle
+--- PASS: TestFullLifecycle (0.44s)
+=== RUN   TestErrorPaths
+=== RUN   TestErrorPaths/NewManager_on_non-git_directory
+=== RUN   TestErrorPaths/CreateWorktree_with_branch_already_checked_out
+=== RUN   TestErrorPaths/ValidateBranchPrefix_empty
+=== RUN   TestErrorPaths/ValidateBranchPrefix_contains_spaces
+=== RUN   TestErrorPaths/ValidateBranchPrefix_forbidden_character
+=== RUN   TestErrorPaths/ValidateBranchPrefix_double_dots
+=== RUN   TestErrorPaths/ValidateBranchPrefix_leading_slash
+=== RUN   TestErrorPaths/ValidateBranchPrefix_consecutive_slashes
+=== RUN   TestErrorPaths/ValidateBranchPrefix_leading_dot
+=== RUN   TestErrorPaths/ValidateBranchPrefix_trailing_dot
+=== RUN   TestErrorPaths/ValidateBranchPrefix_leading_hyphen
+=== RUN   TestErrorPaths/ValidateBranchPrefix_trailing_hyphen
+=== RUN   TestErrorPaths/ValidateBranchPrefix_non-ASCII_printable
+--- PASS: TestErrorPaths (0.20s)
+    --- PASS: TestErrorPaths/NewManager_on_non-git_directory (0.01s)
+    --- PASS: TestErrorPaths/CreateWorktree_with_branch_already_checked_out (0.18s)
+    --- PASS: TestErrorPaths/ValidateBranchPrefix_empty (0.00s)
+    --- PASS: TestErrorPaths/ValidateBranchPrefix_contains_spaces (0.00s)
+    --- PASS: TestErrorPaths/ValidateBranchPrefix_forbidden_character (0.00s)
+    --- PASS: TestErrorPaths/ValidateBranchPrefix_double_dots (0.00s)
+    --- PASS: TestErrorPaths/ValidateBranchPrefix_leading_slash (0.00s)
+    --- PASS: TestErrorPaths/ValidateBranchPrefix_consecutive_slashes (0.00s)
+    --- PASS: TestErrorPaths/ValidateBranchPrefix_leading_dot (0.00s)
+    --- PASS: TestErrorPaths/ValidateBranchPrefix_trailing_dot (0.00s)
+    --- PASS: TestErrorPaths/ValidateBranchPrefix_leading_hyphen (0.00s)
+    --- PASS: TestErrorPaths/ValidateBranchPrefix_trailing_hyphen (0.00s)
+    --- PASS: TestErrorPaths/ValidateBranchPrefix_non-ASCII_printable (0.00s)
+=== RUN   TestGenerateBranchPrefixFormat
+--- PASS: TestGenerateBranchPrefixFormat (0.00s)
+=== RUN   TestGenerateBranchPrefixVariety
+--- PASS: TestGenerateBranchPrefixVariety (0.00s)
+=== RUN   TestGenerateBranchPrefixValidWords
+--- PASS: TestGenerateBranchPrefixValidWords (0.00s)
+=== RUN   TestValidateBranchPrefix
+=== RUN   TestValidateBranchPrefix/simple_alphanumeric
+=== RUN   TestValidateBranchPrefix/single_character
+=== RUN   TestValidateBranchPrefix/hyphen_separated
+=== RUN   TestValidateBranchPrefix/slash_separated
+=== RUN   TestValidateBranchPrefix/user_name_format
+=== RUN   TestValidateBranchPrefix/complex_valid_name
+=== RUN   TestValidateBranchPrefix/numbers_and_underscores
+=== RUN   TestValidateBranchPrefix/mixed_case
+=== RUN   TestValidateBranchPrefix/space_in_middle
+=== RUN   TestValidateBranchPrefix/leading_space
+=== RUN   TestValidateBranchPrefix/trailing_space
+=== RUN   TestValidateBranchPrefix/tilde_character
+=== RUN   TestValidateBranchPrefix/caret_character
+=== RUN   TestValidateBranchPrefix/colon_character
+=== RUN   TestValidateBranchPrefix/backslash_character
+=== RUN   TestValidateBranchPrefix/question_mark
+=== RUN   TestValidateBranchPrefix/asterisk_character
+=== RUN   TestValidateBranchPrefix/bracket_character
+=== RUN   TestValidateBranchPrefix/double_dots
+=== RUN   TestValidateBranchPrefix/double_dots_at_start
+=== RUN   TestValidateBranchPrefix/double_dots_at_end
+=== RUN   TestValidateBranchPrefix/leading_dot
+=== RUN   TestValidateBranchPrefix/trailing_dot
+=== RUN   TestValidateBranchPrefix/leading_hyphen
+=== RUN   TestValidateBranchPrefix/trailing_hyphen
+=== RUN   TestValidateBranchPrefix/leading_slash
+=== RUN   TestValidateBranchPrefix/consecutive_slashes
+=== RUN   TestValidateBranchPrefix/double_slash_at_start
+=== RUN   TestValidateBranchPrefix/empty_string
+--- PASS: TestValidateBranchPrefix (0.00s)
+    --- PASS: TestValidateBranchPrefix/simple_alphanumeric (0.00s)
+    --- PASS: TestValidateBranchPrefix/single_character (0.00s)
+    --- PASS: TestValidateBranchPrefix/hyphen_separated (0.00s)
+    --- PASS: TestValidateBranchPrefix/slash_separated (0.00s)
+    --- PASS: TestValidateBranchPrefix/user_name_format (0.00s)
+    --- PASS: TestValidateBranchPrefix/complex_valid_name (0.00s)
+    --- PASS: TestValidateBranchPrefix/numbers_and_underscores (0.00s)
+    --- PASS: TestValidateBranchPrefix/mixed_case (0.00s)
+    --- PASS: TestValidateBranchPrefix/space_in_middle (0.00s)
+    --- PASS: TestValidateBranchPrefix/leading_space (0.00s)
+    --- PASS: TestValidateBranchPrefix/trailing_space (0.00s)
+    --- PASS: TestValidateBranchPrefix/tilde_character (0.00s)
+    --- PASS: TestValidateBranchPrefix/caret_character (0.00s)
+    --- PASS: TestValidateBranchPrefix/colon_character (0.00s)
+    --- PASS: TestValidateBranchPrefix/backslash_character (0.00s)
+    --- PASS: TestValidateBranchPrefix/question_mark (0.00s)
+    --- PASS: TestValidateBranchPrefix/asterisk_character (0.00s)
+    --- PASS: TestValidateBranchPrefix/bracket_character (0.00s)
+    --- PASS: TestValidateBranchPrefix/double_dots (0.00s)
+    --- PASS: TestValidateBranchPrefix/double_dots_at_start (0.00s)
+    --- PASS: TestValidateBranchPrefix/double_dots_at_end (0.00s)
+    --- PASS: TestValidateBranchPrefix/leading_dot (0.00s)
+    --- PASS: TestValidateBranchPrefix/trailing_dot (0.00s)
+    --- PASS: TestValidateBranchPrefix/leading_hyphen (0.00s)
+    --- PASS: TestValidateBranchPrefix/trailing_hyphen (0.00s)
+    --- PASS: TestValidateBranchPrefix/leading_slash (0.00s)
+    --- PASS: TestValidateBranchPrefix/consecutive_slashes (0.00s)
+    --- PASS: TestValidateBranchPrefix/double_slash_at_start (0.00s)
+    --- PASS: TestValidateBranchPrefix/empty_string (0.00s)
+=== RUN   TestNewManagerInGitRepo
+--- PASS: TestNewManagerInGitRepo (0.08s)
+=== RUN   TestNewManagerInNonGitRepo
+--- PASS: TestNewManagerInNonGitRepo (0.01s)
+=== RUN   TestCreateWorktree
+--- PASS: TestCreateWorktree (0.16s)
+=== RUN   TestCreateWorktreeBranchAlreadyExists
+--- PASS: TestCreateWorktreeBranchAlreadyExists (0.14s)
+=== RUN   TestCreateWorktreeBranchAlreadyCheckedOut
+--- PASS: TestCreateWorktreeBranchAlreadyCheckedOut (0.18s)
+=== RUN   TestRemoveWorktree
+--- PASS: TestRemoveWorktree (0.17s)
+=== RUN   TestRemoveWorktreeMissingDirectory
+--- PASS: TestRemoveWorktreeMissingDirectory (0.16s)
+=== RUN   TestDetectSubmodulesFalseWhenNone
+--- PASS: TestDetectSubmodulesFalseWhenNone (0.16s)
+PASS
+ok  	github.com/riricardoMa/claude-grid/internal/git	2.188s

@@ -1,0 +1,7 @@
+Scenario: RemoveWorktree with deleted directory
+Command: go test ./internal/git/... -run TestRemoveWorktreeMissingDirectory -v
+
+=== RUN   TestRemoveWorktreeMissingDirectory
+--- PASS: TestRemoveWorktreeMissingDirectory (0.17s)
+PASS
+ok   github.com/riricardoMa/claude-grid/internal/git  0.985s
