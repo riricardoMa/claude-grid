@@ -40,11 +40,18 @@ func NewKillCmd(storePath string, executor script.ScriptExecutor) *cobra.Command
 				fmt.Fprintf(cmd.ErrOrStderr(), "Warning: failed to close windows: %v\n", err)
 			}
 
-			if err := store.DeleteSession(sessionName); err != nil {
-				fmt.Fprintf(cmd.ErrOrStderr(), "Warning: failed to delete session file: %v\n", err)
+			if len(sess.Worktrees) > 0 {
+				sess.Status = "stopped"
+				if err := store.UpdateSession(sess); err != nil {
+					fmt.Fprintf(cmd.ErrOrStderr(), "Warning: failed to update session: %v\n", err)
+				}
+				fmt.Fprintf(cmd.OutOrStdout(), "Session '%s' stopped. %d windows closed. Worktrees preserved.\nRun 'claude-grid clean %s' to remove worktrees.\n", sessionName, len(sess.Windows), sessionName)
+			} else {
+				if err := store.DeleteSession(sessionName); err != nil {
+					fmt.Fprintf(cmd.ErrOrStderr(), "Warning: failed to delete session file: %v\n", err)
+				}
+				fmt.Fprintf(cmd.OutOrStdout(), "Session '%s' killed. %d windows closed.\n", sessionName, len(sess.Windows))
 			}
-
-			fmt.Fprintf(cmd.OutOrStdout(), "Session '%s' killed. %d windows closed.\n", sessionName, len(sess.Windows))
 			return nil
 		},
 	}

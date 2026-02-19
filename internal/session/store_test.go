@@ -361,3 +361,135 @@ func TestSessionCRUDLifecycle(t *testing.T) {
 		t.Error("Session still exists after delete")
 	}
 }
+
+func TestSaveSessionWithWorktrees(t *testing.T) {
+	tempDir := t.TempDir()
+	store := NewStore(tempDir)
+	
+	session := Session{
+		Name:      "grid-worktrees",
+		Backend:   "terminal",
+		Count:     2,
+		Dir:       "/home/user/project",
+		CreatedAt: time.Now(),
+		Windows: []WindowRef{
+			{ID: "w1", Index: 0},
+			{ID: "w2", Index: 1},
+		},
+		Worktrees: []WorktreeRef{
+			{Path: "/home/user/project/main", Branch: "main"},
+			{Path: "/home/user/project/feature", Branch: "feature/new-api"},
+		},
+		Status:   "active",
+		RepoPath: "/home/user/project",
+	}
+	
+	err := store.SaveSession(session)
+	if err != nil {
+		t.Fatalf("SaveSession() error = %v", err)
+	}
+	
+	loaded, err := store.LoadSession("grid-worktrees")
+	if err != nil {
+		t.Fatalf("LoadSession() error = %v", err)
+	}
+	
+	if len(loaded.Worktrees) != 2 {
+		t.Errorf("Worktrees count = %d, want 2", len(loaded.Worktrees))
+	}
+	if loaded.Worktrees[0].Path != "/home/user/project/main" {
+		t.Errorf("Worktree[0].Path = %q, want %q", loaded.Worktrees[0].Path, "/home/user/project/main")
+	}
+	if loaded.Worktrees[0].Branch != "main" {
+		t.Errorf("Worktree[0].Branch = %q, want %q", loaded.Worktrees[0].Branch, "main")
+	}
+	if loaded.Status != "active" {
+		t.Errorf("Status = %q, want %q", loaded.Status, "active")
+	}
+	if loaded.RepoPath != "/home/user/project" {
+		t.Errorf("RepoPath = %q, want %q", loaded.RepoPath, "/home/user/project")
+	}
+}
+
+func TestBackwardCompatibilityOldSessionFormat(t *testing.T) {
+	tempDir := t.TempDir()
+	store := NewStore(tempDir)
+	
+	sessionDir := filepath.Join(tempDir, "sessions")
+	os.MkdirAll(sessionDir, 0755)
+	
+	oldSessionJSON := `{
+  "name": "grid-old",
+  "backend": "terminal",
+  "count": 2,
+  "dir": "/tmp",
+  "created_at": "2026-02-17T10:30:00Z",
+  "windows": [
+    {"id": "w1", "index": 0},
+    {"id": "w2", "index": 1}
+  ]
+}`
+	
+	sessionPath := filepath.Join(sessionDir, "grid-old.json")
+	os.WriteFile(sessionPath, []byte(oldSessionJSON), 0644)
+	
+	loaded, err := store.LoadSession("grid-old")
+	if err != nil {
+		t.Fatalf("LoadSession() error = %v", err)
+	}
+	
+	if loaded.Name != "grid-old" {
+		t.Errorf("Name = %q, want %q", loaded.Name, "grid-old")
+	}
+	if len(loaded.Worktrees) != 0 {
+		t.Errorf("Worktrees should be empty for old format, got %d", len(loaded.Worktrees))
+	}
+	if loaded.Status != "" {
+		t.Errorf("Status should be empty for old format, got %q", loaded.Status)
+	}
+	if loaded.RepoPath != "" {
+		t.Errorf("RepoPath should be empty for old format, got %q", loaded.RepoPath)
+	}
+}
+
+func TestUpdateSession(t *testing.T) {
+	tempDir := t.TempDir()
+	store := NewStore(tempDir)
+	
+	session := Session{
+		Name:      "grid-update",
+		Backend:   "terminal",
+		Count:     2,
+		Dir:       "/tmp",
+		CreatedAt: time.Now(),
+		Windows: []WindowRef{
+			{ID: "w1", Index: 0},
+		},
+		Status: "active",
+	}
+	
+	if err := store.SaveSession(session); err != nil {
+		t.Fatalf("SaveSession() error = %v", err)
+	}
+	
+	session.Status = "stopped"
+	session.Worktrees = []WorktreeRef{
+		{Path: "/tmp/wt1", Branch: "main"},
+	}
+	
+	if err := store.UpdateSession(session); err != nil {
+		t.Fatalf("UpdateSession() error = %v", err)
+	}
+	
+	loaded, err := store.LoadSession("grid-update")
+	if err != nil {
+		t.Fatalf("LoadSession() error = %v", err)
+	}
+	
+	if loaded.Status != "stopped" {
+		t.Errorf("Status = %q, want %q", loaded.Status, "stopped")
+	}
+	if len(loaded.Worktrees) != 1 {
+		t.Errorf("Worktrees count = %d, want 1", len(loaded.Worktrees))
+	}
+}

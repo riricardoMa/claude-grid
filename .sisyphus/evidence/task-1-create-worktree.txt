@@ -1,0 +1,11 @@
+Scenario: Create worktree from temp git repo
+Command: go test ./internal/git/... -run TestCreateWorktree -v
+
+=== RUN   TestCreateWorktree
+--- PASS: TestCreateWorktree (0.17s)
+=== RUN   TestCreateWorktreeBranchAlreadyExists
+--- PASS: TestCreateWorktreeBranchAlreadyExists (0.16s)
+=== RUN   TestCreateWorktreeBranchAlreadyCheckedOut
+--- PASS: TestCreateWorktreeBranchAlreadyCheckedOut (0.18s)
+PASS
+ok   github.com/riricardoMa/claude-grid/internal/git  0.957s

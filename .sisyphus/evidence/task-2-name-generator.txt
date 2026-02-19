@@ -1,0 +1,50 @@
+TASK 2: Branch Name Generator - QA Evidence
+=============================================
+
+DELIVERABLES COMPLETED:
+✓ File created: internal/git/names.go
+✓ File created: internal/git/names_test.go
+✓ Function: GenerateBranchPrefix() returns adjective-noun pairs
+
+IMPLEMENTATION DETAILS:
+- Used crypto/rand for randomness (NOT math/rand)
+- Adjectives: 30 words (brave, swift, calm, bold, keen, warm, cool, neat, fair, wise, glad, soft, pure, wild, free, true, deep, high, rich, slim, rare, fast, safe, firm, mild, dark, pale, loud, sly, dry)
+- Nouns: 30 animals (fox, elk, owl, lynx, wolf, bear, hawk, deer, crow, dove, hare, seal, wren, mink, frog, moth, newt, pike, colt, swan, lark, crab, mole, toad, wasp, goat, lamb, puma, orca, ibis)
+- Pattern: ^[a-z]+-[a-z]+$ (e.g., "brave-fox", "swift-elk")
+
+TEST RESULTS:
+=============
+Test 1: TestGenerateBranchPrefixFormat
+  - Validates pattern ^[a-z]+-[a-z]+$ across 20 calls
+  - Status: PASS
+
+Test 2: TestGenerateBranchPrefixVariety
+  - Generates 10 calls, expects ≥2 unique values
+  - Status: PASS (variety confirmed)
+
+Test 3: TestGenerateBranchPrefixValidWords
+  - Validates all adjectives and nouns are from approved lists
+  - Runs 50 iterations to ensure consistency
+  - Status: PASS
+
+FULL TEST OUTPUT:
+=================
+=== RUN   TestGenerateBranchPrefixFormat
+--- PASS: TestGenerateBranchPrefixFormat (0.00s)
+=== RUN   TestGenerateBranchPrefixVariety
+--- PASS: TestGenerateBranchPrefixVariety (0.00s)
+=== RUN   TestGenerateBranchPrefixValidWords
+--- PASS: TestGenerateBranchPrefixValidWords (0.00s)
+PASS
+ok  	github.com/riricardoMa/claude-grid/internal/git	0.471s
+
+VERIFICATION CHECKLIST:
+✓ crypto/rand used (pattern from internal/session/store.go:52-65)
+✓ Word lists: ~30 adjectives, ~30 nouns
+✓ Returns single adjective-noun string (caller appends -N)
+✓ Pattern matches ^[a-z]+-[a-z]+$
+✓ Multiple calls produce variety (≥2 unique in 10 calls)
+✓ go test ./internal/git/... passes
+✓ No uncommitted changes required (Task 1, 3 grouped)
+
+STATUS: COMPLETE

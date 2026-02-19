@@ -76,9 +76,19 @@ func (b *WarpBackend) SpawnWindows(ctx context.Context, opts SpawnOptions) ([]Wi
 		return nil, err
 	}
 
-	encodedPath := strings.ReplaceAll(url.PathEscape(opts.Dir), "%2F", "/")
-	uri := fmt.Sprintf("warp://action/new_window?path=%s", encodedPath)
+	var dirs []string
+	if len(opts.Dirs) > 0 {
+		dirs = opts.Dirs
+	} else {
+		dirs = make([]string, opts.Count)
+		for i := range dirs {
+			dirs[i] = opts.Dir
+		}
+	}
+
 	for i := 0; i < opts.Count; i++ {
+		encodedPath := strings.ReplaceAll(url.PathEscape(dirs[i]), "%2F", "/")
+		uri := fmt.Sprintf("warp://action/new_window?path=%s", encodedPath)
 		if err := b.runOpen(ctx, uri); err != nil {
 			return nil, fmt.Errorf("open warp uri: %w", err)
 		}

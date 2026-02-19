@@ -1,0 +1,24 @@
+Task 5: Terminal Per-Window Dirs Evidence
+=========================================
+Date: 2026-02-18
+
+Changes Made:
+1. backend.go: Added `Dirs []string` field to SpawnOptions
+2. terminal_app.go: Refactored buildSpawnScript(count, dirs []string, ...) 
+3. terminal_app.go: SpawnWindows prepares dirs slice from opts.Dirs or opts.Dir
+4. terminal_app_test.go: Added TestBuildSpawnScriptPerWindowDirs (2 subtests)
+5. terminal_app_test.go: Added TestBuildSpawnScriptPerWindowDirsBackwardCompat
+
+Test Results (go test ./internal/terminal/... -v):
+- TestTerminalAppName: PASS
+- TestTerminalAppAvailable: PASS
+- TestTerminalAppSpawnScript/two_windows_with_expected_bounds_format: PASS
+- TestBuildSpawnScriptPerWindowDirs/different_dir_per_window: PASS
+- TestBuildSpawnScriptPerWindowDirs/mixed_dirs_with_empty: PASS
+- TestBuildSpawnScriptPerWindowDirsBackwardCompat: PASS
+- TestTerminalAppEscaping: PASS
+- TestTerminalAppCloseGraceful: PASS
+- TestTerminalAppImplementsInterface: PASS
+- All Warp tests: PASS
+
+Total: 16 tests PASS, 0 FAIL

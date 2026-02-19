@@ -1,0 +1,30 @@
+=== RUN   TestErrorPaths
+=== RUN   TestErrorPaths/NewManager_on_non-git_directory
+=== RUN   TestErrorPaths/CreateWorktree_with_branch_already_checked_out
+=== RUN   TestErrorPaths/ValidateBranchPrefix_empty
+=== RUN   TestErrorPaths/ValidateBranchPrefix_contains_spaces
+=== RUN   TestErrorPaths/ValidateBranchPrefix_forbidden_character
+=== RUN   TestErrorPaths/ValidateBranchPrefix_double_dots
+=== RUN   TestErrorPaths/ValidateBranchPrefix_leading_slash
+=== RUN   TestErrorPaths/ValidateBranchPrefix_consecutive_slashes
+=== RUN   TestErrorPaths/ValidateBranchPrefix_leading_dot
+=== RUN   TestErrorPaths/ValidateBranchPrefix_trailing_dot
+=== RUN   TestErrorPaths/ValidateBranchPrefix_leading_hyphen
+=== RUN   TestErrorPaths/ValidateBranchPrefix_trailing_hyphen
+=== RUN   TestErrorPaths/ValidateBranchPrefix_non-ASCII_printable
+--- PASS: TestErrorPaths (0.19s)
+    --- PASS: TestErrorPaths/NewManager_on_non-git_directory (0.01s)
+    --- PASS: TestErrorPaths/CreateWorktree_with_branch_already_checked_out (0.18s)
+    --- PASS: TestErrorPaths/ValidateBranchPrefix_empty (0.00s)
+    --- PASS: TestErrorPaths/ValidateBranchPrefix_contains_spaces (0.00s)
+    --- PASS: TestErrorPaths/ValidateBranchPrefix_forbidden_character (0.00s)
+    --- PASS: TestErrorPaths/ValidateBranchPrefix_double_dots (0.00s)
+    --- PASS: TestErrorPaths/ValidateBranchPrefix_leading_slash (0.00s)
+    --- PASS: TestErrorPaths/ValidateBranchPrefix_consecutive_slashes (0.00s)
+    --- PASS: TestErrorPaths/ValidateBranchPrefix_leading_dot (0.00s)
+    --- PASS: TestErrorPaths/ValidateBranchPrefix_trailing_dot (0.00s)
+    --- PASS: TestErrorPaths/ValidateBranchPrefix_leading_hyphen (0.00s)
+    --- PASS: TestErrorPaths/ValidateBranchPrefix_trailing_hyphen (0.00s)
+    --- PASS: TestErrorPaths/ValidateBranchPrefix_non-ASCII_printable (0.00s)
+PASS
+ok  	github.com/riricardoMa/claude-grid/internal/git	0.466s

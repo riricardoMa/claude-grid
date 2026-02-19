@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"github.com/spf13/cobra"
+	"github.com/riricardoMa/claude-grid/internal/git"
 	"github.com/riricardoMa/claude-grid/internal/grid"
 	"github.com/riricardoMa/claude-grid/internal/screen"
 	"github.com/riricardoMa/claude-grid/internal/script"
@@ -21,10 +22,12 @@ import (
 // NewRootCommand creates and returns the root cobra command.
 func NewRootCommand(version, commit, date string) *cobra.Command {
 	var (
-		terminalFlag string
-		dirFlag      string
-		nameFlag     string
-		layoutFlag   string
+		terminalFlag     string
+		dirFlag          string
+		nameFlag         string
+		layoutFlag       string
+		worktreesFlag    bool
+		branchPrefixFlag string
 	)
 
 	cmd := &cobra.Command{
@@ -80,6 +83,61 @@ func NewRootCommand(version, commit, date string) *cobra.Command {
 			if err != nil {
 				fmt.Fprintf(stderr, "failed to resolve directory %q: %v\n", dirFlag, err)
 				return fmt.Errorf("resolve directory: %w", err)
+			}
+
+			var worktreeDirs []string
+			var worktreeRefs []session.WorktreeRef
+			var repoPath string
+			var cleanupWorktrees func()
+			spawnSucceeded := false
+			defer func() {
+				if cleanupWorktrees != nil && !spawnSucceeded {
+					cleanupWorktrees()
+				}
+			}()
+
+			if worktreesFlag {
+				manager, err := git.NewManager(resolvedDir)
+				if err != nil {
+					fmt.Fprintf(stderr, "failed to initialize git worktree manager: %v\n", err)
+					return fmt.Errorf("init worktree manager: %w", err)
+				}
+
+				if manager.DetectSubmodules() {
+					fmt.Fprintln(stderr, "warning: git submodules detected; worktree operations may require additional setup")
+				}
+
+				prefix := strings.TrimSpace(branchPrefixFlag)
+				if prefix == "" {
+					prefix = git.GenerateBranchPrefix()
+				} else if err := git.ValidateBranchPrefix(prefix); err != nil {
+					fmt.Fprintf(stderr, "invalid branch prefix %q: %v\n", branchPrefixFlag, err)
+					return fmt.Errorf("validate branch prefix: %w", err)
+				}
+
+				repoPath = manager.RepoPath()
+				worktreeDirs = make([]string, 0, count)
+				worktreeRefs = make([]session.WorktreeRef, 0, count)
+
+				cleanupWorktrees = func() {
+					for _, ref := range worktreeRefs {
+						if err := manager.RemoveWorktree(ref.Path); err != nil {
+							fmt.Fprintf(stderr, "warning: failed to clean up worktree %q: %v\n", ref.Path, err)
+						}
+					}
+				}
+
+				for i := 0; i < count; i++ {
+					branch := fmt.Sprintf("%s-%d", prefix, i+1)
+					path, err := manager.CreateWorktree(branch)
+					if err != nil {
+						fmt.Fprintf(stderr, "failed to create worktree for branch %q: %v\n", branch, err)
+						return fmt.Errorf("create worktree: %w", err)
+					}
+
+					worktreeDirs = append(worktreeDirs, path)
+					worktreeRefs = append(worktreeRefs, session.WorktreeRef{Path: path, Branch: branch})
+				}
 			}
 
 			executor := script.NewOSAExecutor()
@@ -152,27 +210,42 @@ func NewRootCommand(version, commit, date string) *cobra.Command {
 				Bounds:    bounds,
 				SessionID: sessionName,
 			}
+			if len(worktreeDirs) > 0 {
+				spawnOptions.Dirs = worktreeDirs
+			}
 
 			windows, err := backend.SpawnWindows(cmd.Context(), spawnOptions)
 			if err != nil {
+				if cleanupWorktrees != nil {
+					cleanupWorktrees()
+					cleanupWorktrees = nil
+				}
 				_ = backend.CloseSession(sessionName)
 				fmt.Fprintf(stderr, "failed to spawn windows: %v\n", err)
 				return fmt.Errorf("spawn windows: %w", err)
 			}
+			spawnSucceeded = true
 
 			sessionWindows := make([]session.WindowRef, 0, len(windows))
 			for _, window := range windows {
 				sessionWindows = append(sessionWindows, session.WindowRef{ID: window.ID, Index: window.Index})
 			}
 
-			err = store.SaveSession(session.Session{
+			sess := session.Session{
 				Name:      sessionName,
 				Backend:   backend.Name(),
 				Count:     count,
 				Dir:       resolvedDir,
 				CreatedAt: time.Now(),
 				Windows:   sessionWindows,
-			})
+			}
+			if len(worktreeRefs) > 0 {
+				sess.Worktrees = worktreeRefs
+				sess.Status = "active"
+				sess.RepoPath = repoPath
+			}
+
+			err = store.SaveSession(sess)
 			if err != nil {
 				_ = backend.CloseSession(sessionName)
 				fmt.Fprintf(stderr, "failed to save session: %v\n", err)
@@ -190,6 +263,8 @@ func NewRootCommand(version, commit, date string) *cobra.Command {
 	cmd.Flags().StringVarP(&dirFlag, "dir", "d", "", "Working directory (default: current directory)")
 	cmd.Flags().StringVarP(&nameFlag, "name", "n", "", "Session name (default: auto-generated)")
 	cmd.Flags().StringVarP(&layoutFlag, "layout", "l", "", "Grid layout, e.g. 2x3 (default: auto)")
+	cmd.Flags().BoolVarP(&worktreesFlag, "worktrees", "w", false, "Create git worktrees for each window")
+	cmd.Flags().StringVarP(&branchPrefixFlag, "branch-prefix", "b", "", "Branch prefix for worktrees (default: auto-generated)")
 	cmd.SetFlagErrorFunc(func(c *cobra.Command, err error) error {
 		if len(os.Args) >= 2 {
 			candidate := strings.TrimSpace(os.Args[1])
@@ -207,6 +282,7 @@ func NewRootCommand(version, commit, date string) *cobra.Command {
 	cmd.AddCommand(NewVersionCmd(version, commit, date))
 	cmd.AddCommand(NewListCmd("", script.NewOSAExecutor()))
 	cmd.AddCommand(NewKillCmd("", script.NewOSAExecutor()))
+	cmd.AddCommand(NewCleanCmd(""))
 
 	return cmd
 }

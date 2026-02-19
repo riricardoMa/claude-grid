@@ -18,12 +18,21 @@ type Session struct {
 	Dir       string       `json:"dir"`
 	CreatedAt time.Time    `json:"created_at"`
 	Windows   []WindowRef  `json:"windows"`
+	Worktrees []WorktreeRef `json:"worktrees,omitempty"`
+	Status    string       `json:"status,omitempty"`
+	RepoPath  string       `json:"repo_path,omitempty"`
 }
 
 // WindowRef represents a reference to a spawned window.
 type WindowRef struct {
 	ID    string `json:"id"`
 	Index int    `json:"index"`
+}
+
+// WorktreeRef represents a reference to a git worktree.
+type WorktreeRef struct {
+	Path   string `json:"path"`
+	Branch string `json:"branch"`
 }
 
 // Store manages session persistence to JSON files.
@@ -67,6 +76,26 @@ func (s *Store) GenerateSessionName() string {
 // SaveSession saves a session to disk as JSON.
 // Auto-creates the sessions directory if it doesn't exist.
 func (s *Store) SaveSession(session Session) error {
+	if err := os.MkdirAll(s.baseDir, 0755); err != nil {
+		return fmt.Errorf("failed to create sessions directory: %w", err)
+	}
+	
+	path := filepath.Join(s.baseDir, session.Name+".json")
+	data, err := json.MarshalIndent(session, "", "  ")
+	if err != nil {
+		return fmt.Errorf("failed to marshal session: %w", err)
+	}
+	
+	if err := os.WriteFile(path, data, 0644); err != nil {
+		return fmt.Errorf("failed to write session file: %w", err)
+	}
+	
+	return nil
+}
+
+// UpdateSession overwrites an existing session file with new data.
+// Identical to SaveSession but with semantic distinction for updates.
+func (s *Store) UpdateSession(session Session) error {
 	if err := os.MkdirAll(s.baseDir, 0755); err != nil {
 		return fmt.Errorf("failed to create sessions directory: %w", err)
 	}

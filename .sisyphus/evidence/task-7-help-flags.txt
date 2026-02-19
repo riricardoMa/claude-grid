@@ -1,0 +1,12 @@
+Task 7: CLI flag visibility verification
+=======================================
+
+Command:
+go run . --help
+
+Relevant output:
+- `-w, --worktrees              Create git worktrees for each window`
+- `-b, --branch-prefix string   Branch prefix for worktrees (default: auto-generated)`
+
+Result:
+- Both required flags are present in CLI help output.

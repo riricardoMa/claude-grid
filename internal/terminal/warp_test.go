@@ -265,6 +265,92 @@ func TestWarpSpawnWindowsScenarios(t *testing.T) {
 	}
 }
 
+func TestWarpPerWindowDirs(t *testing.T) {
+	tests := []struct {
+		name     string
+		opts     SpawnOptions
+		wantURIs []string
+	}{
+		{
+			name: "dirs override produces per-window URIs",
+			opts: SpawnOptions{
+				Count: 3,
+				Dir:   "/fallback",
+				Dirs:  []string{"/proj/alpha", "/proj/beta", "/proj/gamma"},
+				Bounds: []grid.WindowBounds{
+					{X: 0, Y: 0, Width: 100, Height: 100},
+					{X: 100, Y: 0, Width: 100, Height: 100},
+					{X: 0, Y: 100, Width: 100, Height: 100},
+				},
+			},
+			wantURIs: []string{
+				"warp://action/new_window?path=/proj/alpha",
+				"warp://action/new_window?path=/proj/beta",
+				"warp://action/new_window?path=/proj/gamma",
+			},
+		},
+		{
+			name: "empty dirs falls back to Dir for all windows",
+			opts: SpawnOptions{
+				Count: 2,
+				Dir:   "/shared",
+				Bounds: []grid.WindowBounds{
+					{X: 0, Y: 0, Width: 100, Height: 100},
+					{X: 100, Y: 0, Width: 100, Height: 100},
+				},
+			},
+			wantURIs: []string{
+				"warp://action/new_window?path=/shared",
+				"warp://action/new_window?path=/shared",
+			},
+		},
+		{
+			name: "dirs with spaces are encoded correctly",
+			opts: SpawnOptions{
+				Count: 2,
+				Dir:   "/tmp",
+				Dirs:  []string{"/my project", "/other dir"},
+				Bounds: []grid.WindowBounds{
+					{X: 0, Y: 0, Width: 100, Height: 100},
+					{X: 100, Y: 0, Width: 100, Height: 100},
+				},
+			},
+			wantURIs: []string{
+				"warp://action/new_window?path=/my%20project",
+				"warp://action/new_window?path=/other%20dir",
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			b := NewWarpBackend(&warpMockExecutor{})
+			var gotURIs []string
+			b.runOpen = func(ctx context.Context, uri string) error {
+				gotURIs = append(gotURIs, uri)
+				return nil
+			}
+			b.sleepFn = func(time.Duration) {}
+			b.waitForWindowCountFn = func(context.Context, int) error { return nil }
+			b.tileWindowsFn = func(context.Context, []grid.WindowBounds) error { return nil }
+
+			_, err := b.SpawnWindows(context.Background(), tt.opts)
+			if err != nil {
+				t.Fatalf("SpawnWindows() error = %v", err)
+			}
+
+			if len(gotURIs) != len(tt.wantURIs) {
+				t.Fatalf("URI count = %d, want %d", len(gotURIs), len(tt.wantURIs))
+			}
+			for i, want := range tt.wantURIs {
+				if gotURIs[i] != want {
+					t.Errorf("URI[%d] = %q, want %q", i, gotURIs[i], want)
+				}
+			}
+		})
+	}
+}
+
 func TestWarpCloseSession(t *testing.T) {
 	executor := &warpMockExecutor{}
 	b := NewWarpBackend(executor)

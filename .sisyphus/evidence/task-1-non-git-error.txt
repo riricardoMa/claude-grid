@@ -1,0 +1,7 @@
+Scenario: NewManager fails outside git repo
+Command: go test ./internal/git/... -run TestNewManagerInNonGitRepo -v
+
+=== RUN   TestNewManagerInNonGitRepo
+--- PASS: TestNewManagerInNonGitRepo (0.01s)
+PASS
+ok   github.com/riricardoMa/claude-grid/internal/git  0.651s
