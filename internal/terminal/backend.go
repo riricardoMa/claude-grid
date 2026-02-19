@@ -40,6 +40,9 @@ type SpawnOptions struct {
 	// Dir is the absolute working directory for the windows.
 	Dir string
 
+	// Dirs is an optional list of per-window directories. If set, Dirs[i] is used for window i. If empty, Dir is used for all windows.
+	Dirs []string
+
 	// Grid specifies the grid layout (rows and columns).
 	Grid grid.GridLayout
 

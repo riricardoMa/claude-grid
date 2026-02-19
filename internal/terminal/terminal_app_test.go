@@ -131,6 +131,96 @@ func TestTerminalAppSpawnScript(t *testing.T) {
 	}
 }
 
+func TestBuildSpawnScriptPerWindowDirs(t *testing.T) {
+	bounds := []grid.WindowBounds{
+		{X: 0, Y: 0, Width: 800, Height: 600},
+		{X: 800, Y: 0, Width: 800, Height: 600},
+		{X: 0, Y: 600, Width: 800, Height: 600},
+	}
+
+	tests := []struct {
+		name     string
+		dirs     []string
+		wantDirs []string
+	}{
+		{
+			name:     "different dir per window",
+			dirs:     []string{"/projects/alpha", "/projects/beta", "/projects/gamma"},
+			wantDirs: []string{"/projects/alpha", "/projects/beta", "/projects/gamma"},
+		},
+		{
+			name:     "mixed dirs with empty",
+			dirs:     []string{"/projects/alpha", "", "/projects/gamma"},
+			wantDirs: []string{"/projects/alpha", "", "/projects/gamma"},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			executor := &mockScriptExecutor{output: "301,302,303"}
+			backend := NewTerminalAppBackend(executor)
+
+			ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+			defer cancel()
+
+			_, err := backend.SpawnWindows(ctx, SpawnOptions{
+				Count:  3,
+				Dirs:   tt.dirs,
+				Bounds: bounds,
+			})
+			if err != nil {
+				t.Fatalf("SpawnWindows() error = %v", err)
+			}
+
+			gotScript := executor.runs[0]
+			for i, wantDir := range tt.wantDirs {
+				if wantDir == "" {
+					continue
+				}
+				sanitized := script.SanitizeForAppleScript(wantDir)
+				if !strings.Contains(gotScript, sanitized) {
+					t.Errorf("window %d: script missing dir %q (sanitized: %q)", i, wantDir, sanitized)
+				}
+			}
+
+			doScriptCount := strings.Count(gotScript, "do script")
+			if doScriptCount != 3 {
+				t.Errorf("do script count = %d, want 3", doScriptCount)
+			}
+		})
+	}
+}
+
+func TestBuildSpawnScriptPerWindowDirsBackwardCompat(t *testing.T) {
+	bounds := []grid.WindowBounds{
+		{X: 0, Y: 0, Width: 800, Height: 600},
+		{X: 800, Y: 0, Width: 800, Height: 600},
+	}
+
+	executor := &mockScriptExecutor{output: "401,402"}
+	backend := NewTerminalAppBackend(executor)
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	_, err := backend.SpawnWindows(ctx, SpawnOptions{
+		Count:   2,
+		Dir:     "/tmp/single-dir",
+		Command: "claude",
+		Bounds:  bounds,
+	})
+	if err != nil {
+		t.Fatalf("SpawnWindows() error = %v", err)
+	}
+
+	gotScript := executor.runs[0]
+
+	dirCount := strings.Count(gotScript, "/tmp/single-dir")
+	if dirCount != 2 {
+		t.Errorf("single Dir should appear in all %d windows, found %d times", 2, dirCount)
+	}
+}
+
 func TestTerminalAppEscaping(t *testing.T) {
 	executor := &mockScriptExecutor{output: "201"}
 	backend := NewTerminalAppBackend(executor)
