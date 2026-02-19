@@ -1,0 +1,28 @@
+=== RUN   TestBuildSpawnScriptPerWindowPrompts
+=== RUN   TestBuildSpawnScriptPerWindowPrompts/per-window_prompts_injected
+=== RUN   TestBuildSpawnScriptPerWindowPrompts/no_prompts_—_backward_compat
+=== RUN   TestBuildSpawnScriptPerWindowPrompts/fewer_prompts_than_windows
+=== RUN   TestBuildSpawnScriptPerWindowPrompts/prompt_with_special_chars_escaped
+--- PASS: TestBuildSpawnScriptPerWindowPrompts (0.00s)
+    --- PASS: TestBuildSpawnScriptPerWindowPrompts/per-window_prompts_injected (0.00s)
+    --- PASS: TestBuildSpawnScriptPerWindowPrompts/no_prompts_—_backward_compat (0.00s)
+    --- PASS: TestBuildSpawnScriptPerWindowPrompts/fewer_prompts_than_windows (0.00s)
+    --- PASS: TestBuildSpawnScriptPerWindowPrompts/prompt_with_special_chars_escaped (0.00s)
+PASS
+ok  	github.com/riricardoMa/claude-grid/internal/terminal	0.221s
+=== RUN   TestTerminalAppName
+--- PASS: TestTerminalAppName (0.00s)
+=== RUN   TestTerminalAppAvailable
+--- PASS: TestTerminalAppAvailable (0.00s)
+=== RUN   TestTerminalAppSpawnScript
+=== RUN   TestTerminalAppSpawnScript/two_windows_with_expected_bounds_format
+--- PASS: TestTerminalAppSpawnScript (0.00s)
+    --- PASS: TestTerminalAppSpawnScript/two_windows_with_expected_bounds_format (0.00s)
+=== RUN   TestTerminalAppEscaping
+--- PASS: TestTerminalAppEscaping (0.00s)
+=== RUN   TestTerminalAppCloseGraceful
+--- PASS: TestTerminalAppCloseGraceful (0.00s)
+=== RUN   TestTerminalAppImplementsInterface
+--- PASS: TestTerminalAppImplementsInterface (0.00s)
+PASS
+ok  	github.com/riricardoMa/claude-grid/internal/terminal	0.227s

@@ -1,0 +1,46 @@
+=== RUN   TestWarpName
+--- PASS: TestWarpName (0.00s)
+=== RUN   TestWarpAvailable
+=== RUN   TestWarpAvailable/app_exists
+=== RUN   TestWarpAvailable/app_missing
+=== RUN   TestWarpAvailable/permission_error
+--- PASS: TestWarpAvailable (0.00s)
+    --- PASS: TestWarpAvailable/app_exists (0.00s)
+    --- PASS: TestWarpAvailable/app_missing (0.00s)
+    --- PASS: TestWarpAvailable/permission_error (0.00s)
+=== RUN   TestWarpURIConstruction
+--- PASS: TestWarpURIConstruction (0.00s)
+=== RUN   TestWarpTilingScript
+--- PASS: TestWarpTilingScript (0.00s)
+=== RUN   TestWarpBackoff
+--- PASS: TestWarpBackoff (0.00s)
+=== RUN   TestWarpAccessibilityError
+--- PASS: TestWarpAccessibilityError (0.00s)
+=== RUN   TestWarpSpawnWindowsScenarios
+=== RUN   TestWarpSpawnWindowsScenarios/single_window_success
+=== RUN   TestWarpSpawnWindowsScenarios/multiple_windows_success
+=== RUN   TestWarpSpawnWindowsScenarios/open_error
+--- PASS: TestWarpSpawnWindowsScenarios (0.00s)
+    --- PASS: TestWarpSpawnWindowsScenarios/single_window_success (0.00s)
+    --- PASS: TestWarpSpawnWindowsScenarios/multiple_windows_success (0.00s)
+    --- PASS: TestWarpSpawnWindowsScenarios/open_error (0.00s)
+=== RUN   TestWarpPerWindowDirs
+=== RUN   TestWarpPerWindowDirs/dirs_override_produces_per-window_URIs
+=== RUN   TestWarpPerWindowDirs/empty_dirs_falls_back_to_Dir_for_all_windows
+=== RUN   TestWarpPerWindowDirs/dirs_with_spaces_are_encoded_correctly
+--- PASS: TestWarpPerWindowDirs (0.00s)
+    --- PASS: TestWarpPerWindowDirs/dirs_override_produces_per-window_URIs (0.00s)
+    --- PASS: TestWarpPerWindowDirs/empty_dirs_falls_back_to_Dir_for_all_windows (0.00s)
+    --- PASS: TestWarpPerWindowDirs/dirs_with_spaces_are_encoded_correctly (0.00s)
+=== RUN   TestWarpCloseSession
+--- PASS: TestWarpCloseSession (0.00s)
+=== RUN   TestWarpPerWindowPrompts
+=== RUN   TestWarpPerWindowPrompts/per-window_different_prompts
+=== RUN   TestWarpPerWindowPrompts/no_prompts_—_backward_compat
+=== RUN   TestWarpPerWindowPrompts/partial_prompts_—_first_window_has_prompt,_rest_bare
+--- PASS: TestWarpPerWindowPrompts (0.00s)
+    --- PASS: TestWarpPerWindowPrompts/per-window_different_prompts (0.00s)
+    --- PASS: TestWarpPerWindowPrompts/no_prompts_—_backward_compat (0.00s)
+    --- PASS: TestWarpPerWindowPrompts/partial_prompts_—_first_window_has_prompt,_rest_bare (0.00s)
+PASS
+ok  	github.com/riricardoMa/claude-grid/internal/terminal	0.219s

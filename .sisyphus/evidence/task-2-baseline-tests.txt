@@ -1,0 +1,16 @@
+=== RUN   TestRootCommand
+=== RUN   TestRootCommand/missing_count_arg
+=== RUN   TestRootCommand/invalid_count_non-number
+=== RUN   TestRootCommand/count_too_low_zero
+=== RUN   TestRootCommand/count_too_high_seventeen
+=== RUN   TestRootCommand/version_flag
+=== RUN   TestRootCommand/valid_count_without_claude_in_path
+--- PASS: TestRootCommand (7.81s)
+    --- PASS: TestRootCommand/missing_count_arg (0.00s)
+    --- PASS: TestRootCommand/invalid_count_non-number (0.00s)
+    --- PASS: TestRootCommand/count_too_low_zero (0.00s)
+    --- PASS: TestRootCommand/count_too_high_seventeen (0.00s)
+    --- PASS: TestRootCommand/version_flag (0.00s)
+    --- PASS: TestRootCommand/valid_count_without_claude_in_path (7.81s)
+PASS
+ok  	github.com/riricardoMa/claude-grid/cmd	8.026s

@@ -342,3 +342,11 @@ Plan initialized. Wave 1 starting: 7 parallel tasks (scaffolding, grid calc, App
 - --dir /nonexistent proceeds without error
 - Terminal opens in fallback directory
 - Minor enhancement opportunity, not a bug
+
+## Task 5: manifest package (2026-02-18)
+- `gopkg.in/yaml.v3` added as direct dependency via `go get gopkg.in/yaml.v3@latest`
+- Struct tags use `yaml:"field"` pattern (analogous to `json:"field"` in session/store.go)
+- `pathutil.ExpandTilde` handles `~` expansion; relative paths resolved via `filepath.Join(manifestDir, expanded)`
+- Max 16 instances enforced (matches CLI count limit)
+- TDD approach: test file written first, then implementation — all 9 tests pass on first run
+- `strings.Contains` used directly in tests (no custom helper needed)

@@ -1,0 +1,23 @@
+=== RUN   TestParse
+=== RUN   TestParse/valid_full_manifest
+=== RUN   TestParse/valid_minimal_—_dir_only
+=== RUN   TestParse/invalid_YAML_syntax
+=== RUN   TestParse/missing_instances_field
+=== RUN   TestParse/empty_instances_list
+=== RUN   TestParse/instance_missing_dir
+=== RUN   TestParse/too_many_instances_(17)
+=== RUN   TestParse/tilde_expansion_in_dir
+=== RUN   TestParse/relative_dir_resolved_to_manifest_location
+--- PASS: TestParse (0.00s)
+    --- PASS: TestParse/valid_full_manifest (0.00s)
+    --- PASS: TestParse/valid_minimal_—_dir_only (0.00s)
+    --- PASS: TestParse/invalid_YAML_syntax (0.00s)
+    --- PASS: TestParse/missing_instances_field (0.00s)
+    --- PASS: TestParse/empty_instances_list (0.00s)
+    --- PASS: TestParse/instance_missing_dir (0.00s)
+    --- PASS: TestParse/too_many_instances_(17) (0.00s)
+    --- PASS: TestParse/tilde_expansion_in_dir (0.00s)
+    --- PASS: TestParse/relative_dir_resolved_to_manifest_location (0.00s)
+PASS
+ok  	github.com/riricardoMa/claude-grid/internal/manifest	0.222s
+all modules verified

@@ -1,0 +1,31 @@
+=== RUN   TestRootCommand
+=== RUN   TestRootCommand/missing_count_arg
+=== RUN   TestRootCommand/invalid_count_non-number
+=== RUN   TestRootCommand/count_too_low_zero
+=== RUN   TestRootCommand/count_too_high_seventeen
+=== RUN   TestRootCommand/version_flag
+=== RUN   TestRootCommand/valid_count_without_claude_in_path
+--- PASS: TestRootCommand (7.71s)
+    --- PASS: TestRootCommand/missing_count_arg (0.00s)
+    --- PASS: TestRootCommand/invalid_count_non-number (0.00s)
+    --- PASS: TestRootCommand/count_too_low_zero (0.00s)
+    --- PASS: TestRootCommand/count_too_high_seventeen (0.00s)
+    --- PASS: TestRootCommand/version_flag (0.00s)
+    --- PASS: TestRootCommand/valid_count_without_claude_in_path (7.71s)
+=== RUN   TestRootCommandDirFlags
+--- PASS: TestRootCommandDirFlags (5.45s)
+=== RUN   TestRootCommandManifestConflicts
+=== RUN   TestRootCommandManifestConflicts/manifest_+_dir
+=== RUN   TestRootCommandManifestConflicts/manifest_+_count
+=== RUN   TestRootCommandManifestConflicts/manifest_+_prompt
+--- PASS: TestRootCommandManifestConflicts (0.00s)
+    --- PASS: TestRootCommandManifestConflicts/manifest_+_dir (0.00s)
+    --- PASS: TestRootCommandManifestConflicts/manifest_+_count (0.00s)
+    --- PASS: TestRootCommandManifestConflicts/manifest_+_prompt (0.00s)
+=== RUN   TestRootCommandDirValidation
+--- PASS: TestRootCommandDirValidation (0.00s)
+=== RUN   TestRootCommandTooManyPrompts
+--- PASS: TestRootCommandTooManyPrompts (0.00s)
+PASS
+ok  	github.com/riricardoMa/claude-grid/cmd	13.395s
+BUILD OK
