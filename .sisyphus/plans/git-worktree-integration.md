@@ -1015,19 +1015,19 @@ Max Concurrent: 4 (Wave 1)
 
 > 4 review agents run in PARALLEL. ALL must APPROVE. Rejection → fix → re-run.
 
-- [ ] F1. **Plan Compliance Audit** — `oracle`
+- [x] F1. **Plan Compliance Audit** — `oracle`
   Read the plan end-to-end. For each "Must Have": verify implementation exists (read file, run command). For each "Must NOT Have": search codebase for forbidden patterns — reject with file:line if found. Check evidence files exist in .sisyphus/evidence/. Compare deliverables against plan.
   Output: `Must Have [N/N] | Must NOT Have [N/N] | Tasks [N/N] | VERDICT: APPROVE/REJECT`
 
-- [ ] F2. **Code Quality Review** — `unspecified-high`
+- [x] F2. **Code Quality Review** — `unspecified-high`
   Run `go vet ./...` + `go test ./...` + `go build ./...`. Review all changed/new files for: empty catches, unused imports, hardcoded paths. Check AI slop: excessive comments, over-abstraction, generic variable names (data/result/item/temp). Verify git commands use `-C` pattern, not `cmd.Dir`. Verify no `sh -c` with user input.
   Output: `Build [PASS/FAIL] | Vet [PASS/FAIL] | Tests [N pass/N fail] | Files [N clean/N issues] | VERDICT`
 
-- [ ] F3. **Real QA** — `unspecified-high`
+- [x] F3. **Real QA** — `unspecified-high`
   Start from clean state. Create a temp git repo. Run `claude-grid 2 --worktrees` → verify 2 worktree branches created, windows spawn in worktree dirs. Run `claude-grid kill <session>` → verify windows close, worktrees preserved, session file shows "stopped". Run `claude-grid clean <session>` → verify worktrees removed, session deleted. Run `claude-grid list` throughout to verify status display. Test edge cases: non-git repo with --worktrees, invalid branch prefix.
   Output: `Scenarios [N/N pass] | Edge Cases [N tested] | VERDICT`
 
-- [ ] F4. **Scope Fidelity Check** — `deep`
+- [x] F4. **Scope Fidelity Check** — `deep`
   For each task: read "What to do", read actual diff. Verify 1:1 — everything in spec was built, nothing beyond spec was built. Check "Must NOT do" compliance. Detect cross-task contamination. Flag unaccounted changes. Verify no grid/screen/tiling logic was touched.
   Output: `Tasks [N/N compliant] | Contamination [CLEAN/N issues] | VERDICT`
 
