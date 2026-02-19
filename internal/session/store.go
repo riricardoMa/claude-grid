@@ -12,15 +12,18 @@ import (
 
 // Session represents a stored session with window references.
 type Session struct {
-	Name      string       `json:"name"`
-	Backend   string       `json:"backend"`
-	Count     int          `json:"count"`
-	Dir       string       `json:"dir"`
-	CreatedAt time.Time    `json:"created_at"`
-	Windows   []WindowRef  `json:"windows"`
-	Worktrees []WorktreeRef `json:"worktrees,omitempty"`
-	Status    string       `json:"status,omitempty"`
-	RepoPath  string       `json:"repo_path,omitempty"`
+	Name         string        `json:"name"`
+	Backend      string        `json:"backend"`
+	Count        int           `json:"count"`
+	Dir          string        `json:"dir"`
+	CreatedAt    time.Time     `json:"created_at"`
+	Windows      []WindowRef   `json:"windows"`
+	Worktrees    []WorktreeRef `json:"worktrees,omitempty"`
+	Status       string        `json:"status,omitempty"`
+	RepoPath     string        `json:"repo_path,omitempty"`
+	Dirs         []string      `json:"dirs,omitempty"`
+	Prompts      []string      `json:"prompts,omitempty"`
+	ManifestPath string        `json:"manifest_path,omitempty"`
 }
 
 // WindowRef represents a reference to a spawned window.
@@ -63,7 +66,7 @@ func (s *Store) GenerateSessionName() string {
 		b := make([]byte, 2)
 		rand.Read(b)
 		name := "grid-" + hex.EncodeToString(b)
-		
+
 		// Check for collision
 		path := filepath.Join(s.baseDir, name+".json")
 		if _, err := os.Stat(path); err != nil {
@@ -79,17 +82,17 @@ func (s *Store) SaveSession(session Session) error {
 	if err := os.MkdirAll(s.baseDir, 0755); err != nil {
 		return fmt.Errorf("failed to create sessions directory: %w", err)
 	}
-	
+
 	path := filepath.Join(s.baseDir, session.Name+".json")
 	data, err := json.MarshalIndent(session, "", "  ")
 	if err != nil {
 		return fmt.Errorf("failed to marshal session: %w", err)
 	}
-	
+
 	if err := os.WriteFile(path, data, 0644); err != nil {
 		return fmt.Errorf("failed to write session file: %w", err)
 	}
-	
+
 	return nil
 }
 
@@ -99,17 +102,17 @@ func (s *Store) UpdateSession(session Session) error {
 	if err := os.MkdirAll(s.baseDir, 0755); err != nil {
 		return fmt.Errorf("failed to create sessions directory: %w", err)
 	}
-	
+
 	path := filepath.Join(s.baseDir, session.Name+".json")
 	data, err := json.MarshalIndent(session, "", "  ")
 	if err != nil {
 		return fmt.Errorf("failed to marshal session: %w", err)
 	}
-	
+
 	if err := os.WriteFile(path, data, 0644); err != nil {
 		return fmt.Errorf("failed to write session file: %w", err)
 	}
-	
+
 	return nil
 }
 
@@ -120,12 +123,12 @@ func (s *Store) LoadSession(name string) (Session, error) {
 	if err != nil {
 		return Session{}, fmt.Errorf("failed to read session file: %w", err)
 	}
-	
+
 	var session Session
 	if err := json.Unmarshal(data, &session); err != nil {
 		return Session{}, fmt.Errorf("failed to unmarshal session: %w", err)
 	}
-	
+
 	return session, nil
 }
 
@@ -138,26 +141,26 @@ func (s *Store) ListSessions() ([]Session, error) {
 		}
 		return nil, fmt.Errorf("failed to read sessions directory: %w", err)
 	}
-	
+
 	var sessions []Session
 	for _, entry := range entries {
 		if entry.IsDir() {
 			continue
 		}
-		
+
 		if filepath.Ext(entry.Name()) != ".json" {
 			continue
 		}
-		
+
 		name := entry.Name()[:len(entry.Name())-5]
 		session, err := s.LoadSession(name)
 		if err != nil {
 			continue
 		}
-		
+
 		sessions = append(sessions, session)
 	}
-	
+
 	return sessions, nil
 }
 

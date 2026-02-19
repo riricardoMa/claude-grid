@@ -36,9 +36,9 @@ type WarpBackend struct {
 	runOpen  func(ctx context.Context, uri string) error
 	sleepFn  func(d time.Duration)
 
-	isWarpRunningFn    func(ctx context.Context) (bool, error)
+	isWarpRunningFn      func(ctx context.Context) (bool, error)
 	waitForWindowCountFn func(ctx context.Context, target int) error
-	tileWindowsFn      func(ctx context.Context, bounds []grid.WindowBounds) error
+	tileWindowsFn        func(ctx context.Context, bounds []grid.WindowBounds) error
 }
 
 func NewWarpBackend(executor script.ScriptExecutor) *WarpBackend {
@@ -109,11 +109,21 @@ func (b *WarpBackend) SpawnWindows(ctx context.Context, opts SpawnOptions) ([]Wi
 		return nil, err
 	}
 
-	command := opts.Command
-	if strings.TrimSpace(command) == "" {
-		command = "claude"
+	baseCommand := opts.Command
+	if strings.TrimSpace(baseCommand) == "" {
+		baseCommand = "claude"
 	}
-	if err := b.sendCommandToWindows(ctx, opts.Count, command); err != nil {
+
+	commands := make([]string, opts.Count)
+	for i := 0; i < opts.Count; i++ {
+		if i < len(opts.Prompts) && strings.TrimSpace(opts.Prompts[i]) != "" {
+			commands[i] = fmt.Sprintf("%s \"%s\"", baseCommand, opts.Prompts[i])
+		} else {
+			commands[i] = baseCommand
+		}
+	}
+
+	if err := b.sendCommandsToWindows(ctx, commands); err != nil {
 		return nil, fmt.Errorf("send command to warp windows: %w", err)
 	}
 
@@ -208,20 +218,20 @@ func (b *WarpBackend) currentWindowCount(ctx context.Context) (int, error) {
 	return count, nil
 }
 
-func (b *WarpBackend) sendCommandToWindows(ctx context.Context, count int, command string) error {
-	sanitizedCmd := script.SanitizeForAppleScript(command)
+func (b *WarpBackend) sendCommandsToWindows(ctx context.Context, commands []string) error {
 	lines := []string{
 		"tell application \"System Events\"",
 		"  tell process \"Warp\"",
 	}
-	for i := 1; i <= count; i++ {
+	for i, cmd := range commands {
+		sanitizedCmd := script.SanitizeForAppleScript(cmd)
 		lines = append(lines,
-			fmt.Sprintf("    set frontmost to true"),
-			fmt.Sprintf("    perform action \"AXRaise\" of window %d", i),
-			fmt.Sprintf("    delay 0.3"),
+			"    set frontmost to true",
+			fmt.Sprintf("    perform action \"AXRaise\" of window %d", i+1),
+			"    delay 0.3",
 			fmt.Sprintf("    keystroke \"%s\"", sanitizedCmd),
-			fmt.Sprintf("    keystroke return"),
-			fmt.Sprintf("    delay 0.2"),
+			"    keystroke return",
+			"    delay 0.2",
 		)
 	}
 	lines = append(lines, "  end tell", "end tell")

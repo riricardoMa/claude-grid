@@ -58,14 +58,27 @@ func (e *OSAExecutor) RunAppleScript(ctx context.Context, script string) (string
 	return outputStr, nil
 }
 
-// SanitizeForAppleScript escapes special characters to prevent injection
-// Order is critical: escape backslashes FIRST, then double quotes
+// SanitizeForAppleScript escapes special characters to prevent injection.
+// Order is critical: escape backslashes FIRST, then double quotes,
+// then characters that could break AppleScript strings or enable
+// shell injection in spawned terminals.
 func SanitizeForAppleScript(s string) string {
-	// Step 1: Escape backslashes
+	// Step 1: Escape backslashes (MUST be first to avoid double-escaping)
 	s = strings.ReplaceAll(s, "\\", "\\\\")
 
 	// Step 2: Escape double quotes
 	s = strings.ReplaceAll(s, "\"", "\\\"")
+
+	// Step 3: Escape newlines and carriage returns (break AppleScript strings)
+	s = strings.ReplaceAll(s, "\n", "\\n")
+	s = strings.ReplaceAll(s, "\r", "\\r")
+
+	// Step 4: Escape backticks (shell command substitution)
+	s = strings.ReplaceAll(s, "`", "\\`")
+
+	// Step 5: Escape shell expansion sequences
+	s = strings.ReplaceAll(s, "$(", "\\$(")
+	s = strings.ReplaceAll(s, "${", "\\${")
 
 	return s
 }

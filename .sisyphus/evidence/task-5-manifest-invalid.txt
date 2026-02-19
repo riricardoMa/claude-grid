@@ -1,0 +1,14 @@
+=== RUN   TestParse
+=== RUN   TestParse/invalid_YAML_syntax
+=== RUN   TestParse/missing_instances_field
+=== RUN   TestParse/empty_instances_list
+=== RUN   TestParse/instance_missing_dir
+=== RUN   TestParse/too_many_instances_(17)
+--- PASS: TestParse (0.00s)
+    --- PASS: TestParse/invalid_YAML_syntax (0.00s)
+    --- PASS: TestParse/missing_instances_field (0.00s)
+    --- PASS: TestParse/empty_instances_list (0.00s)
+    --- PASS: TestParse/instance_missing_dir (0.00s)
+    --- PASS: TestParse/too_many_instances_(17) (0.00s)
+PASS
+ok  	github.com/riricardoMa/claude-grid/internal/manifest	0.208s

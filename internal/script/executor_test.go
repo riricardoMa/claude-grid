@@ -55,7 +55,7 @@ func TestSanitizeForAppleScript(t *testing.T) {
 			expected: "say \\\"hello\\\"",
 		},
 		{
-			name:     "dollar sign",
+			name:     "dollar sign alone",
 			input:    "$HOME",
 			expected: "$HOME",
 		},
@@ -83,6 +83,47 @@ func TestSanitizeForAppleScript(t *testing.T) {
 			name:     "mixed special chars",
 			input:    "test\\path\"with\"quotes",
 			expected: "test\\\\path\\\"with\\\"quotes",
+		},
+		// New prompt-specific escaping tests
+		{
+			name:     "newline character",
+			input:    "line1\nline2",
+			expected: "line1\\nline2",
+		},
+		{
+			name:     "carriage return",
+			input:    "line1\rline2",
+			expected: "line1\\rline2",
+		},
+		{
+			name:     "backtick command substitution",
+			input:    "run `whoami`",
+			expected: "run \\`whoami\\`",
+		},
+		{
+			name:     "dollar-paren shell expansion",
+			input:    "fix $(pwd) issues",
+			expected: "fix \\$(pwd) issues",
+		},
+		{
+			name:     "dollar-brace variable expansion",
+			input:    "use ${HOME} path",
+			expected: "use \\${HOME} path",
+		},
+		{
+			name:     "combined prompt injection attempt",
+			input:    "fix the \"login\" page\nand run $(test)",
+			expected: "fix the \\\"login\\\" page\\nand run \\$(test)",
+		},
+		{
+			name:     "prompt with single quotes",
+			input:    "don't break this",
+			expected: "don't break this",
+		},
+		{
+			name:     "complex prompt with all special chars",
+			input:    "check `status`\nrun ${CMD} and $(echo hi)\\done",
+			expected: "check \\`status\\`\\nrun \\${CMD} and \\$(echo hi)\\\\done",
 		},
 	}
 
@@ -164,21 +205,17 @@ func TestOSAExecutorRunAppleScript(t *testing.T) {
 func TestOSAExecutorTimeout(t *testing.T) {
 	executor := NewOSAExecutor()
 
-	// Create a context that times out immediately
 	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Millisecond)
 	defer cancel()
 
-	// Give it time to timeout
 	time.Sleep(10 * time.Millisecond)
 
-	// Try to run a script - should fail due to timeout
 	_, err := executor.RunAppleScript(ctx, "delay 10")
 
 	if err == nil {
 		t.Errorf("RunAppleScript with timeout expected error, got nil")
 	}
 
-	// Check if it's a context deadline exceeded error
 	if !errors.Is(err, context.DeadlineExceeded) {
 		t.Logf("RunAppleScript timeout error: %v (type: %T)", err, err)
 	}
@@ -189,7 +226,7 @@ func TestOSAExecutorContextCancellation(t *testing.T) {
 	executor := NewOSAExecutor()
 
 	ctx, cancel := context.WithCancel(context.Background())
-	cancel() // Cancel immediately
+	cancel()
 
 	_, err := executor.RunAppleScript(ctx, "return \"test\"")
 
@@ -206,7 +243,6 @@ func TestOSAExecutorContextCancellation(t *testing.T) {
 func TestSanitizeIntegration(t *testing.T) {
 	executor := NewOSAExecutor()
 
-	// Test that sanitized strings can be executed without injection
 	testCases := []struct {
 		name   string
 		input  string
@@ -230,7 +266,6 @@ func TestSanitizeIntegration(t *testing.T) {
 			defer cancel()
 
 			_, err := executor.RunAppleScript(ctx, tc.script)
-			// We just verify it doesn't crash - actual output validation is secondary
 			if err != nil {
 				t.Logf("RunAppleScript with sanitized input returned error: %v", err)
 			}

@@ -1,0 +1,8 @@
+=== RUN   TestSaveSessionWithMultiDir
+--- PASS: TestSaveSessionWithMultiDir (0.00s)
+PASS
+ok  	github.com/riricardoMa/claude-grid/internal/session	0.211s
+=== RUN   TestBackwardCompatibilityMultiDirFields
+--- PASS: TestBackwardCompatibilityMultiDirFields (0.00s)
+PASS
+ok  	github.com/riricardoMa/claude-grid/internal/session	0.236s

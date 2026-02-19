@@ -1,0 +1,144 @@
+================================================================================
+TASK 1: CLAUDE CLI PROMPT SYNTAX VERIFICATION
+================================================================================
+
+FULL CLAUDE --HELP OUTPUT:
+================================================================================
+
+Usage: claude [options] [command] [prompt]
+
+Claude Code - starts an interactive session by default, use -p/--print for
+non-interactive output
+
+Arguments:
+  prompt                                            Your prompt
+
+Options:
+  --add-dir <directories...>                        Additional directories to allow tool access to
+  --agent <agent>                                   Agent for the current session. Overrides the 'agent' setting.
+  --agents <json>                                   JSON object defining custom agents (e.g. '{"reviewer": {"description": "Reviews code", "prompt": "You are a code reviewer"}}')
+  --allow-dangerously-skip-permissions              Enable bypassing all permission checks as an option, without it being enabled by default. Recommended only for sandboxes with no internet access.
+  --allowedTools, --allowed-tools <tools...>        Comma or space-separated list of tool names to allow (e.g. "Bash(git:*) Edit")
+  --append-system-prompt <prompt>                   Append a system prompt to the default system prompt
+  --betas <betas...>                                Beta headers to include in API requests (API key users only)
+  --chrome                                          Enable Claude in Chrome integration
+  -c, --continue                                    Continue the most recent conversation in the current directory
+  --dangerously-skip-permissions                    Bypass all permission checks. Recommended only for sandboxes with no internet access.
+  -d, --debug [filter]                              Enable debug mode with optional category filtering (e.g., "api,hooks" or "!1p,!file")
+  --debug-file <path>                               Write debug logs to a specific file path (implicitly enables debug mode)
+  --disable-slash-commands                          Disable all skills
+  --disallowedTools, --disallowed-tools <tools...>  Comma or space-separated list of tool names to deny (e.g. "Bash(git:*) Edit")
+  --effort <level>                                  Effort level for the current session (low, medium, high)
+  --fallback-model <model>                          Enable automatic fallback to specified model when default model is overloaded (only works with --print)
+  --file <specs...>                                 File resources to download at startup. Format: file_id:relative_path (e.g., --file file_abc:doc.txt file_def:img.png)
+  --fork-session                                    When resuming, create a new session ID instead of reusing the original (use with --resume or --continue)
+  --from-pr [value]                                 Resume a session linked to a PR by PR number/URL, or open interactive picker with optional search term
+  -h, --help                                        Display help for command
+  --ide                                             Automatically connect to IDE on startup if exactly one valid IDE is available
+  --include-partial-messages                        Include partial message chunks as they arrive (only works with --print and --output-format=stream-json)
+  --input-format <format>                           Input format (only works with --print): "text" (default), or "stream-json" (realtime streaming input) (choices: "text", "stream-json")
+  --json-schema <schema>                            JSON Schema for structured output validation. Example: {"type":"object","properties":{"name":{"type":"string"}},"required":["name"]}
+  --max-budget-usd <amount>                         Maximum dollar amount to spend on API calls (only works with --print)
+  --mcp-config <configs...>                         Load MCP servers from JSON files or strings (space-separated)
+  --mcp-debug                                       [DEPRECATED. Use --debug instead] Enable MCP debug mode (shows MCP server errors)
+  --model <model>                                   Model for the current session. Provide an alias for the latest model (e.g. 'sonnet' or 'opus') or a model's full name (e.g. 'claude-sonnet-4-6').
+  --no-chrome                                       Disable Claude in Chrome integration
+  --no-session-persistence                          Disable session persistence - sessions will not be saved to disk and cannot be resumed (only works with --print)
+  --output-format <format>                          Output format (only works with --print): "text" (default), "json" (single result), or "stream-json" (realtime streaming) (choices: "text", "json", "stream-json")
+  --permission-mode <mode>                          Permission mode to use for the session (choices: "acceptEdits", "bypassPermissions", "default", "dontAsk", "plan")
+  --plugin-dir <paths...>                           Load plugins from directories for this session only (repeatable)
+  -p, --print                                       Print response and exit (useful for pipes). Note: The workspace trust dialog is skipped when Claude is run with the -p mode. Only use this flag in directories you trust.
+  --replay-user-messages                            Re-emit user messages from stdin back on stdout for acknowledgment (only works with --input-format=stream-json and --output-format=stream-json)
+  -r, --resume [value]                              Resume a conversation by session ID, or open interactive picker with optional search term
+  --session-id <uuid>                               Use a specific session ID for the conversation (must be a valid UUID)
+  --setting-sources <sources>                       Comma-separated list of setting sources to load (user, project, local).
+  --settings <file-or-json>                         Path to a settings JSON file or a JSON string to load additional settings from
+  --strict-mcp-config                               Only use MCP servers from --mcp-config, ignoring all other MCP configurations
+  --system-prompt <prompt>                          System prompt to use for the session
+  --tools <tools...>                                Specify the list of available tools from the built-in set. Use "" to disable all tools, "default" to use all tools, or specify tool names (e.g. "Bash,Edit,Read").
+  --verbose                                         Override verbose mode setting from config
+  -v, --version                                     Output the version number
+
+Commands:
+  auth                                              Manage authentication
+  doctor                                            Check the health of your Claude Code auto-updater
+  install [options] [target]                        Install Claude Code native build. Use [target] to specify version (stable, latest, or specific version)
+  mcp                                               Configure and manage MCP servers
+  plugin                                            Manage Claude Code plugins
+  setup-token                                       Set up a long-lived authentication token (requires Claude subscription)
+  update|upgrade                                    Check for updates and install if available
+
+
+================================================================================
+CONFIRMED SYNTAX FOR INTERACTIVE MODE WITH PROMPT
+================================================================================
+
+SYNTAX: claude "prompt text"
+
+EXPLANATION:
+- The help output shows: "Usage: claude [options] [command] [prompt]"
+- The "prompt" is a positional argument (not a flag)
+- The first line states: "Claude Code - starts an interactive session by default"
+- This means running `claude "your prompt"` will:
+  1. Start an interactive session
+  2. Pre-load the prompt as the initial message
+  3. Keep the session open for follow-up messages
+
+CANDIDATES ANALYSIS:
+✓ claude "prompt text"           → CORRECT (positional argument, interactive mode)
+✗ claude -p "prompt text"        → WRONG (print mode, exits after response)
+✗ claude --prompt "text"         → NOT AVAILABLE (no --prompt flag exists)
+✗ claude --message "text"        → NOT AVAILABLE (no --message flag exists)
+
+KEY DISTINCTION:
+- `-p` or `--print` flag = non-interactive, prints response and exits
+- No `-p` flag + positional prompt = interactive mode (default behavior)
+
+
+================================================================================
+CAVEATS AND ADDITIONAL NOTES
+================================================================================
+
+1. QUOTING: The prompt text should be quoted to handle spaces and special chars
+   Example: claude "This is my prompt with spaces"
+
+2. OPTIONAL FLAGS: Can combine with other flags while keeping interactive mode
+   Example: claude --model sonnet "my prompt"
+   Example: claude --agent reviewer "review this code"
+
+3. EMPTY PROMPT: Running `claude` with no prompt starts interactive mode
+   with an empty initial message (user types first message)
+
+4. SYSTEM PROMPT: Can use --system-prompt to customize system behavior
+   Example: claude --system-prompt "You are a Python expert" "write a function"
+
+5. SESSION CONTINUATION: Can combine with --continue or --resume
+   Example: claude --continue "follow up on previous work"
+
+6. IMPORTANT FOR MULTI-REPO MODE:
+   - Each spawned window should use: claude "prompt text"
+   - Do NOT use -p flag (that would exit immediately)
+   - The prompt will be pre-loaded and user can continue typing
+
+
+================================================================================
+RECOMMENDATION FOR CLAUDE-GRID MULTI-REPO MODE
+================================================================================
+
+For spawning multiple Claude Code windows with initial prompts:
+
+COMMAND TEMPLATE:
+  claude "Your initial prompt here"
+
+EXAMPLE FOR MULTI-REPO:
+  claude "You are working on the backend service. Here's the task: ..."
+  claude "You are working on the frontend. Here's the task: ..."
+  claude "You are working on the database. Here's the task: ..."
+
+Each window will:
+- Start in interactive mode
+- Display the initial prompt
+- Allow the user to continue the conversation
+- Maintain session persistence
+
+================================================================================

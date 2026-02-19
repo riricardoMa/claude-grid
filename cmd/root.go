@@ -10,20 +10,24 @@ import (
 	"strings"
 	"time"
 
-	"github.com/spf13/cobra"
 	"github.com/riricardoMa/claude-grid/internal/git"
 	"github.com/riricardoMa/claude-grid/internal/grid"
+	"github.com/riricardoMa/claude-grid/internal/manifest"
+	"github.com/riricardoMa/claude-grid/internal/pathutil"
 	"github.com/riricardoMa/claude-grid/internal/screen"
 	"github.com/riricardoMa/claude-grid/internal/script"
 	"github.com/riricardoMa/claude-grid/internal/session"
 	"github.com/riricardoMa/claude-grid/internal/terminal"
+	"github.com/spf13/cobra"
 )
 
 // NewRootCommand creates and returns the root cobra command.
 func NewRootCommand(version, commit, date string) *cobra.Command {
 	var (
 		terminalFlag     string
-		dirFlag          string
+		dirFlags         []string
+		promptFlags      []string
+		manifestFlag     string
 		nameFlag         string
 		layoutFlag       string
 		worktreesFlag    bool
@@ -47,26 +51,58 @@ func NewRootCommand(version, commit, date string) *cobra.Command {
 				return nil
 			}
 
-			if len(args) != 1 {
+			// Manifest conflict detection
+			if manifestFlag != "" {
+				if len(dirFlags) > 0 || len(promptFlags) > 0 || worktreesFlag || len(args) > 0 {
+					fmt.Fprintln(stderr, "--manifest cannot be combined with --dir, --prompt, --worktrees, or count argument")
+					return fmt.Errorf("conflicting flags")
+				}
+			}
+
+			// Count determination
+			var count int
+			var parsedManifest manifest.Manifest
+
+			if manifestFlag != "" {
+				expandedManifestPath, err := pathutil.ExpandTilde(manifestFlag)
+				if err != nil {
+					fmt.Fprintf(stderr, "invalid manifest path %q: %v\n", manifestFlag, err)
+					return fmt.Errorf("invalid manifest path: %w", err)
+				}
+				absManifestPath, err := filepath.Abs(expandedManifestPath)
+				if err != nil {
+					fmt.Fprintf(stderr, "failed to resolve manifest path %q: %v\n", manifestFlag, err)
+					return fmt.Errorf("resolve manifest path: %w", err)
+				}
+				m, err := manifest.Parse(absManifestPath)
+				if err != nil {
+					fmt.Fprintf(stderr, "failed to parse manifest %q: %v\n", manifestFlag, err)
+					return fmt.Errorf("parse manifest: %w", err)
+				}
+				parsedManifest = m
+				count = len(parsedManifest.Instances)
+			} else if len(args) == 1 {
+				c, err := strconv.Atoi(strings.TrimSpace(args[0]))
+				if err != nil {
+					fmt.Fprintf(stderr, "invalid count %q: must be a number between 1 and 16\n", args[0])
+					return fmt.Errorf("invalid count")
+				}
+				if c < 1 || c > 16 {
+					fmt.Fprintf(stderr, "invalid count %d: must be between 1 and 16\n", c)
+					return fmt.Errorf("invalid count")
+				}
+				count = c
+			} else if len(args) == 0 && len(dirFlags) > 0 {
+				count = len(dirFlags)
+			} else {
 				fmt.Fprintln(stderr, "count argument is required: claude-grid <count>")
 				return fmt.Errorf("invalid arguments")
 			}
 
-			count, err := strconv.Atoi(strings.TrimSpace(args[0]))
-			if err != nil {
-				fmt.Fprintf(stderr, "invalid count %q: must be a number between 1 and 16\n", args[0])
-				return fmt.Errorf("invalid count")
-			}
-			if count < 1 || count > 16 {
+			// Validate count range for non-manifest paths
+			if manifestFlag == "" && (count < 1 || count > 16) {
 				fmt.Fprintf(stderr, "invalid count %d: must be between 1 and 16\n", count)
 				return fmt.Errorf("invalid count")
-			}
-
-			claudePath, err := exec.LookPath("claude")
-			if err != nil {
-				fmt.Fprintln(stderr, "'claude' not found in PATH. Install: npm install -g @anthropic-ai/claude-code")
-				fmt.Fprintln(stderr, "Or specify a different location (v0.2).")
-				return fmt.Errorf("claude not found")
 			}
 
 			cwd, err := os.Getwd()
@@ -75,14 +111,89 @@ func NewRootCommand(version, commit, date string) *cobra.Command {
 				return fmt.Errorf("get working directory: %w", err)
 			}
 
-			resolvedDir := dirFlag
-			if strings.TrimSpace(resolvedDir) == "" {
-				resolvedDir = cwd
+			// Dir resolution
+			var resolvedDirs []string
+			var resolvedPrompts []string
+
+			if manifestFlag != "" {
+				resolvedDirs = make([]string, len(parsedManifest.Instances))
+				resolvedPrompts = make([]string, len(parsedManifest.Instances))
+				for i, inst := range parsedManifest.Instances {
+					resolvedDirs[i] = inst.Dir
+					resolvedPrompts[i] = inst.Prompt
+				}
+			} else if len(dirFlags) > 0 {
+				expanded, err := pathutil.ExpandTildeAll(dirFlags)
+				if err != nil {
+					fmt.Fprintf(stderr, "invalid directory: %v\n", err)
+					return fmt.Errorf("expand dir: %w", err)
+				}
+				absDirs := make([]string, len(expanded))
+				for i, d := range expanded {
+					abs, err := filepath.Abs(d)
+					if err != nil {
+						fmt.Fprintf(stderr, "failed to resolve directory %q: %v\n", d, err)
+						return fmt.Errorf("resolve directory: %w", err)
+					}
+					absDirs[i] = abs
+				}
+
+				if len(absDirs) > count {
+					fmt.Fprintf(stderr, "more --dir flags (%d) than instances (%d)\n", len(absDirs), count)
+					return fmt.Errorf("too many dirs")
+				}
+
+				resolvedDirs = make([]string, count)
+				copy(resolvedDirs, absDirs)
+				for i := len(absDirs); i < count; i++ {
+					resolvedDirs[i] = absDirs[len(absDirs)-1]
+				}
+			} else {
+				resolvedDirs = make([]string, count)
+				for i := range resolvedDirs {
+					resolvedDirs[i] = cwd
+				}
 			}
-			resolvedDir, err = filepath.Abs(resolvedDir)
+
+			// Prompt resolution
+			if manifestFlag == "" {
+				resolvedPrompts = make([]string, count)
+				if len(promptFlags) > count {
+					fmt.Fprintf(stderr, "more --prompt flags (%d) than instances (%d)\n", len(promptFlags), count)
+					return fmt.Errorf("too many prompts")
+				}
+				copy(resolvedPrompts, promptFlags)
+			}
+
+			// Directory existence validation
+			for _, d := range resolvedDirs {
+				if _, err := os.Stat(d); err != nil {
+					fmt.Fprintf(stderr, "directory does not exist: %s\n", d)
+					return fmt.Errorf("directory does not exist: %s", d)
+				}
+			}
+
+			resolvedDir := resolvedDirs[0]
+
+			// Branch checkout for manifest instances
+			if manifestFlag != "" {
+				for i, inst := range parsedManifest.Instances {
+					if inst.Branch == "" {
+						continue
+					}
+					checkoutCmd := exec.CommandContext(cmd.Context(), "git", "-C", resolvedDirs[i], "checkout", inst.Branch)
+					if out, err := checkoutCmd.CombinedOutput(); err != nil {
+						fmt.Fprintf(stderr, "failed to checkout branch %q in %s: %v\n%s", inst.Branch, resolvedDirs[i], err, string(out))
+						return fmt.Errorf("checkout branch %q in %s: %w", inst.Branch, resolvedDirs[i], err)
+					}
+				}
+			}
+
+			claudePath, err := exec.LookPath("claude")
 			if err != nil {
-				fmt.Fprintf(stderr, "failed to resolve directory %q: %v\n", dirFlag, err)
-				return fmt.Errorf("resolve directory: %w", err)
+				fmt.Fprintln(stderr, "'claude' not found in PATH. Install: npm install -g @anthropic-ai/claude-code")
+				fmt.Fprintln(stderr, "Or specify a different location (v0.2).")
+				return fmt.Errorf("claude not found")
 			}
 
 			var worktreeDirs []string
@@ -198,13 +309,19 @@ func NewRootCommand(version, commit, date string) *cobra.Command {
 
 			fmt.Fprintf(stdout, "Detected: %s, terminal %s, screen %dx%d\n", runtime.GOOS, backend.Name(), screenInfo.Width, screenInfo.Height)
 			fmt.Fprintf(stdout, "Layout: %dx%d grid (%dx%d per window)\n", gridLayout.Rows, gridLayout.Cols, minWidth, minHeight)
-			fmt.Fprintf(stdout, "Directory: %s\n", resolvedDir)
+			if allDirsSame(resolvedDirs) {
+				fmt.Fprintf(stdout, "Directory: %s\n", resolvedDir)
+			} else {
+				fmt.Fprintf(stdout, "Directories: %d different directories\n", len(resolvedDirs))
+			}
 			fmt.Fprintf(stdout, "Spawning %d Claude Code instances...\n", count)
 
 			spawnOptions := terminal.SpawnOptions{
 				Count:     count,
 				Command:   "claude",
 				Dir:       resolvedDir,
+				Dirs:      resolvedDirs,
+				Prompts:   resolvedPrompts,
 				Grid:      gridLayout,
 				Screen:    screenInfo,
 				Bounds:    bounds,
@@ -236,8 +353,13 @@ func NewRootCommand(version, commit, date string) *cobra.Command {
 				Backend:   backend.Name(),
 				Count:     count,
 				Dir:       resolvedDir,
+				Dirs:      resolvedDirs,
+				Prompts:   resolvedPrompts,
 				CreatedAt: time.Now(),
 				Windows:   sessionWindows,
+			}
+			if manifestFlag != "" {
+				sess.ManifestPath = manifestFlag
 			}
 			if len(worktreeRefs) > 0 {
 				sess.Worktrees = worktreeRefs
@@ -260,7 +382,9 @@ func NewRootCommand(version, commit, date string) *cobra.Command {
 	cmd.PersistentFlags().BoolP("verbose", "v", false, "Enable verbose output")
 	cmd.PersistentFlags().Bool("version", false, "Print version information")
 	cmd.Flags().StringVarP(&terminalFlag, "terminal", "t", "", "Terminal backend: terminal, warp (default: auto-detect)")
-	cmd.Flags().StringVarP(&dirFlag, "dir", "d", "", "Working directory (default: current directory)")
+	cmd.Flags().StringArrayVarP(&dirFlags, "dir", "d", nil, "Working directory (repeatable); infers count")
+	cmd.Flags().StringArrayVar(&promptFlags, "prompt", nil, "Per-instance prompt (repeatable; paired with --dir by index)")
+	cmd.Flags().StringVarP(&manifestFlag, "manifest", "M", "", "YAML manifest file defining instances")
 	cmd.Flags().StringVarP(&nameFlag, "name", "n", "", "Session name (default: auto-generated)")
 	cmd.Flags().StringVarP(&layoutFlag, "layout", "l", "", "Grid layout, e.g. 2x3 (default: auto)")
 	cmd.Flags().BoolVarP(&worktreesFlag, "worktrees", "w", false, "Create git worktrees for each window")
@@ -285,4 +409,16 @@ func NewRootCommand(version, commit, date string) *cobra.Command {
 	cmd.AddCommand(NewCleanCmd(""))
 
 	return cmd
+}
+
+func allDirsSame(ss []string) bool {
+	if len(ss) <= 1 {
+		return true
+	}
+	for _, s := range ss[1:] {
+		if s != ss[0] {
+			return false
+		}
+	}
+	return true
 }
