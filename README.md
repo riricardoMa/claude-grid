@@ -7,6 +7,8 @@
 ## Features
 
 - 🚀 **One-command launch**: `claude-grid 4` spawns 4 tiled terminal windows
+- 🗂️ **Multi-repo orchestration**: Each window in a different repo with its own prompt
+- 📋 **Manifest files**: Define complex multi-repo sprints in a single YAML file
 - 📐 **Auto-calculated grid layouts**: 1→1×1, 2→1×2, 4→2×2, 9→3×3, etc.
 - 🖥️ **Multiple terminal backends**: Terminal.app (built-in) and Warp
 - 💾 **Session tracking**: List and kill sessions with `list` and `kill` commands
@@ -47,14 +49,20 @@ make install
 # Spawn 4 Claude instances in a 2×2 grid
 claude-grid 4
 
+# Each window in a different repo — count inferred automatically
+claude-grid --dir ~/projects/frontend --dir ~/projects/backend --dir ~/projects/infra
+
+# Per-window prompts paired with directories
+claude-grid \
+  --dir ~/projects/frontend --prompt "fix the login page CSS" \
+  --dir ~/projects/backend  --prompt "add rate limiting to /api/auth" \
+  --dir ~/projects/infra    --prompt "update the Terraform modules"
+
+# Load a multi-repo sprint from a manifest file
+claude-grid --manifest sprint.yaml
+
 # Use specific terminal backend
 claude-grid 2 --terminal warp
-
-# Specify working directory
-claude-grid 3 --dir ~/projects/my-app
-
-# Manual layout override
-claude-grid 6 --layout 3x2
 
 # Named session for easy reference
 claude-grid 4 --name my-project
@@ -65,17 +73,19 @@ claude-grid 4 --name my-project
 ### Spawn Windows
 
 ```bash
-claude-grid <count> [flags]
+claude-grid [count] [flags]
 ```
 
 **Arguments:**
-- `<count>` — Number of windows to spawn (1-16)
+- `[count]` — Number of windows to spawn (1–16). Optional when `--dir` or `--manifest` is provided.
 
 **Flags:**
-- `--terminal <backend>` — Terminal backend: `terminal` or `warp` (default: auto-detect)
-- `--dir <path>` — Working directory (default: current directory)
-- `--name <name>` — Session name (default: auto-generated as `grid-XXXX`)
-- `--layout <RxC>` — Grid layout override, e.g., `2x3` or `3X2` (default: auto-calculated)
+- `--dir, -d <path>` — Working directory (repeatable; infers count from number of flags)
+- `--prompt <text>` — Per-instance prompt sent to Claude (repeatable; paired with `--dir` by index)
+- `--manifest, -M <file>` — YAML manifest defining instances (see [Multi-Repo Mode](#multi-repo-mode))
+- `--terminal, -t <backend>` — Terminal backend: `terminal` or `warp` (default: auto-detect)
+- `--name, -n <name>` — Session name (default: auto-generated as `grid-XXXX`)
+- `--layout, -l <RxC>` — Grid layout override, e.g., `2x3` or `3X2` (default: auto-calculated)
 - `--verbose` — Enable verbose output
 
 **Examples:**
@@ -92,6 +102,92 @@ claude-grid 2 --terminal warp --dir ~/code/project
 
 # Named session
 claude-grid 3 --name my-dev-session
+```
+
+### Multi-Repo Mode
+
+Spawn Claude instances across different repositories in one command — the key workflow for full-stack sprints where frontend, backend, infra, and docs live in separate repos.
+
+#### Repeatable `--dir` and `--prompt`
+
+Pass `--dir` multiple times to open each window in a different directory. The count is inferred automatically — no need for a positional argument.
+
+```bash
+# 3 windows, each in a different repo
+claude-grid \
+  --dir ~/projects/frontend \
+  --dir ~/projects/backend \
+  --dir ~/projects/infra
+```
+
+Pair with `--prompt` (by index) to give each Claude instance a specific task:
+
+```bash
+claude-grid \
+  --dir ~/projects/frontend --prompt "fix the login page CSS" \
+  --dir ~/projects/backend  --prompt "add rate limiting to /api/auth" \
+  --dir ~/projects/infra    --prompt "update the Terraform modules"
+```
+
+You can also mix an explicit count with a single `--dir` to open N windows all in the same non-cwd directory:
+
+```bash
+# 4 windows, all in ~/projects/my-app
+claude-grid 4 --dir ~/projects/my-app
+```
+
+#### Manifest Files
+
+For repeatable or complex sprint setups, define everything in a YAML manifest and pass it with `--manifest`:
+
+```bash
+claude-grid --manifest sprint.yaml
+```
+
+**Manifest format** (`sprint.yaml`):
+
+```yaml
+name: sprint-42          # optional — used for display
+
+instances:
+  - dir: ~/projects/frontend
+    prompt: "fix the login page CSS"
+    branch: fix/login-css        # optional: checkout this branch before spawning
+
+  - dir: ~/projects/backend-api
+    prompt: "add rate limiting to /api/auth"
+
+  - dir: ~/projects/shared-lib
+    prompt: "update TypeScript types for new auth flow"
+
+  - dir: ~/projects/docs
+    prompt: "update API docs to reflect new auth endpoints"
+```
+
+**Fields:**
+
+| Field | Required | Description |
+|-------|----------|-------------|
+| `dir` | ✅ | Path to the repository. Supports `~` expansion and relative paths (resolved from the manifest file's location). |
+| `prompt` | — | Initial prompt sent to Claude in that window. |
+| `branch` | — | Git branch to check out before spawning (`git checkout <branch>`). Must already exist — branch creation is not supported. |
+
+**Rules:**
+- `--manifest` cannot be combined with `--dir`, `--prompt`, `--worktrees`, or a count argument. Use `--name`, `--layout`, and `--terminal` freely alongside it.
+- Maximum 16 instances per manifest.
+- All `dir` paths are validated to exist before any window is spawned.
+
+#### Conflict Detection
+
+```bash
+# ✅ Valid — orthogonal flags work fine
+claude-grid --manifest sprint.yaml --name my-sprint --terminal warp
+
+# ❌ Error — manifest conflicts with explicit dirs
+claude-grid --manifest sprint.yaml --dir ~/projects/foo
+
+# ❌ Error — manifest conflicts with count arg
+claude-grid --manifest sprint.yaml 4
 ```
 
 ### List Sessions
