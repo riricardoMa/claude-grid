@@ -368,3 +368,75 @@ func TestWarpCloseSession(t *testing.T) {
 		t.Fatalf("CloseSession script missing close window command:\n%s", executor.scripts[0])
 	}
 }
+
+func TestWarpPerWindowPrompts(t *testing.T) {
+	tests := []struct {
+		name              string
+		prompts           []string
+		count             int
+		wantKeystrokeStrs []string
+	}{
+		{
+			name:              "per-window different prompts",
+			prompts:           []string{"fix login", "add tests", "update docs"},
+			count:             3,
+			wantKeystrokeStrs: []string{"fix login", "add tests", "update docs"},
+		},
+		{
+			name:              "no prompts — backward compat",
+			prompts:           nil,
+			count:             2,
+			wantKeystrokeStrs: []string{"claude"},
+		},
+		{
+			name:              "partial prompts — first window has prompt, rest bare",
+			prompts:           []string{"fix login"},
+			count:             3,
+			wantKeystrokeStrs: []string{"fix login", "claude"},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			executor := &warpMockExecutor{}
+			b := NewWarpBackend(executor)
+			b.runOpen = func(ctx context.Context, uri string) error { return nil }
+			b.sleepFn = func(time.Duration) {}
+			b.waitForWindowCountFn = func(context.Context, int) error { return nil }
+			b.tileWindowsFn = func(context.Context, []grid.WindowBounds) error { return nil }
+
+			bounds := make([]grid.WindowBounds, tt.count)
+			for i := range bounds {
+				bounds[i] = grid.WindowBounds{X: i * 100, Y: 0, Width: 100, Height: 100}
+			}
+
+			_, err := b.SpawnWindows(context.Background(), SpawnOptions{
+				Count:   tt.count,
+				Dir:     "/tmp",
+				Bounds:  bounds,
+				Prompts: tt.prompts,
+			})
+			if err != nil {
+				t.Fatalf("SpawnWindows() error = %v", err)
+			}
+
+			// Find the keystroke script (last RunAppleScript call that contains "keystroke")
+			var keystrokeScript string
+			for _, s := range executor.scripts {
+				if strings.Contains(s, "keystroke") {
+					keystrokeScript = s
+					break
+				}
+			}
+			if keystrokeScript == "" {
+				t.Fatalf("no keystroke script found in captured scripts: %v", executor.scripts)
+			}
+
+			for _, want := range tt.wantKeystrokeStrs {
+				if !strings.Contains(keystrokeScript, want) {
+					t.Errorf("keystroke script missing %q\nscript:\n%s", want, keystrokeScript)
+				}
+			}
+		})
+	}
+}

@@ -66,7 +66,7 @@ func (b *TerminalAppBackend) SpawnWindows(ctx context.Context, opts SpawnOptions
 		}
 	}
 
-	spawnScript := buildSpawnScript(opts.Count, dirs, command, opts.Bounds)
+	spawnScript := buildSpawnScript(opts.Count, dirs, opts.Prompts, command, opts.Bounds)
 	output, err := b.executor.RunAppleScript(ctx, spawnScript)
 	if err != nil {
 		return nil, fmt.Errorf("failed to spawn terminal windows: %w", err)
@@ -103,7 +103,7 @@ func (b *TerminalAppBackend) CloseSession(sessionID string) error {
 	return nil
 }
 
-func buildSpawnScript(count int, dirs []string, command string, bounds []grid.WindowBounds) string {
+func buildSpawnScript(count int, dirs []string, prompts []string, command string, bounds []grid.WindowBounds) string {
 	lines := []string{terminalTellStart}
 
 	sanitizedCommand := script.SanitizeForAppleScript(command)
@@ -113,6 +113,10 @@ func buildSpawnScript(count int, dirs []string, command string, bounds []grid.Wi
 		windowCommand := sanitizedCommand
 		if strings.TrimSpace(sanitizedDir) != "" {
 			windowCommand = fmt.Sprintf("cd \\\"%s\\\" && %s", sanitizedDir, sanitizedCommand)
+		}
+		if i < len(prompts) && strings.TrimSpace(prompts[i]) != "" {
+			sanitizedPrompt := script.SanitizeForAppleScript(prompts[i])
+			windowCommand = fmt.Sprintf("%s \"%s\"", windowCommand, sanitizedPrompt)
 		}
 
 		bound := bounds[i]

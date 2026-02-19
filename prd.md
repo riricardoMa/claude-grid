@@ -19,13 +19,13 @@ Developers using Claude Code increasingly need to run multiple instances in para
 
 **Existing tools don't solve this:**
 
-| Tool                              | What it does                                                                   | What's missing                                                                                                                                          |
-| --------------------------------- | ------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **claude-squad** (6k⭐)           | Manages multiple agents with git worktrees, TUI for switching between sessions | Single-window TUI — you can't _see_ all instances simultaneously. No visual tiling. Requires git repo. Focused on orchestration, not visual monitoring. |
-| **ntm**                           | tmux pane manager for AI agents                                                | Heavy setup, tmux-only, no native macOS window support, panes get cramped at scale                                                                      |
-| **multi-agent-shogun**            | Samurai-themed orchestrator with hierarchy                                     | Complex YAML config, overkill for "just give me N Claude windows"                                                                                       |
-| **Claude Agent Teams** (built-in) | Experimental team coordination                                                 | Requires tmux/iTerm2, experimental flag, limited to coordinated work — not independent sessions                                                         |
-| **Rectangle/Magnet**              | Generic window tiling                                                          | Manual per-window snapping, no automation, no terminal spawning                                                                                         |
+| Tool | What it does | What's missing |
+|------|-------------|----------------|
+| **claude-squad** (6k⭐) | Manages multiple agents with git worktrees, TUI for switching between sessions | Single-window TUI — you can't *see* all instances simultaneously. No visual tiling. Requires git repo. Focused on orchestration, not visual monitoring. |
+| **ntm** | tmux pane manager for AI agents | Heavy setup, tmux-only, no native macOS window support, panes get cramped at scale |
+| **multi-agent-shogun** | Samurai-themed orchestrator with hierarchy | Complex YAML config, overkill for "just give me N Claude windows" |
+| **Claude Agent Teams** (built-in) | Experimental team coordination | Requires tmux/iTerm2, experimental flag, limited to coordinated work — not independent sessions |
+| **Rectangle/Magnet** | Generic window tiling | Manual per-window snapping, no automation, no terminal spawning |
 
 **The gap:** No tool lets you run a single command to spawn N Claude Code instances, visually tiled across your screen, all from the directory you're already in.
 
@@ -70,7 +70,6 @@ claude-grid <count> [options]
 Spawns `<count>` terminal windows, each running `claude` in the current working directory, and tiles them in an auto-calculated grid across the screen.
 
 **Behavior:**
-
 - Auto-detect screen resolution and calculate optimal grid (e.g., 4 → 2×2, 6 → 3×2, 9 → 3×3)
 - Each window opens in `$PWD` (or specified `--dir`)
 - Each window runs `claude` (or specified `--program`)
@@ -115,17 +114,63 @@ Optionally send an initial prompt to each Claude instance:
 # Different task per window
 claude-grid 3 \
   --prompt "refactor the auth module" \
-  --prompt "write tests for api/routes" \
-  --prompt "update README with new API docs"
+    --prompt "write tests for api/routes" \
+    --prompt "update README with new API docs"
 
-# Same prompt to all
-claude-grid 4 --prompt-all "review this codebase for security issues"
+  # Same prompt to all
+  claude-grid 4 --prompt-all "review this codebase for security issues"
 
-# From a file (one prompt per line)
-claude-grid 4 --prompts-file tasks.txt
-```
+  # From a file (one prompt per line)
+  claude-grid 4 --prompts-file tasks.txt
+  ```
 
-### 4.5 Session Naming & Persistence
+  ### 4.5 Multi-Directory & Multi-Repo Mode
+
+  By default, all instances open in `$PWD`. But you can point each instance at a different directory or repo:
+
+  ```bash
+  # Each instance in a different repo
+  claude-grid 3 \
+    --dir ~/projects/frontend \
+    --dir ~/projects/backend-api \
+    --dir ~/projects/shared-lib
+
+  # Mix: some repos + prompts (paired by index)
+  claude-grid 3 \
+    --dir ~/projects/frontend   --prompt "fix the login page CSS" \
+    --dir ~/projects/backend    --prompt "add rate limiting to /api/auth" \
+    --dir ~/projects/infra      --prompt "update the Terraform modules"
+
+  # From a manifest file (for complex setups)
+  claude-grid --manifest sprint.yaml
+  ```
+
+  **Manifest file format** (`sprint.yaml`):
+
+  ```yaml
+  # claude-grid manifest
+  name: sprint-42
+  instances:
+    - dir: ~/projects/frontend
+      prompt: "fix the login page CSS"
+      branch: fix/login-css          # optional: auto-checkout this branch
+    - dir: ~/projects/backend-api
+      prompt: "add rate limiting to /api/auth"
+    - dir: ~/projects/shared-lib
+      prompt: "update TypeScript types for new auth flow"
+    - dir: ~/projects/docs
+      prompt: "update API docs to reflect new auth endpoints"
+  ```
+
+  This is the key differentiator from claude-squad and ntm — those tools are single-repo-centric (git worktrees within one repo). Real-world sprints often span multiple repos (frontend, backend, infra, docs), and `claude-grid` lets you orchestrate across all of them visually.
+
+  **Behavior rules:**
+  - `--dir` repeated N times → opens N instances (count is inferred, `<count>` arg becomes optional)
+  - If `<count>` is given AND `--dir` is given fewer times → remaining instances use the last `--dir` or `$PWD`
+  - `--manifest` overrides all other flags; count is inferred from the file
+  - Each `--dir` is validated to exist before spawning
+
+### 4.6 Session Naming & Persistence
 
 ```bash
 # Named session
@@ -176,7 +221,6 @@ Usage: `claude-grid preset frontend`
 ### 5.2 Watch Mode / Status Bar
 
 A lightweight status overlay or companion pane that shows:
-
 - Which instances are active/idle/waiting for input
 - Token usage per instance (if detectable)
 - Quick summary of what each instance is working on
@@ -218,15 +262,15 @@ claude-grid 6 --program "bash"  # just 6 tiled terminals
 
 **Recommended: Rust or Go**
 
-| Consideration                       | Rust                        | Go                   |
-| ----------------------------------- | --------------------------- | -------------------- |
-| Single binary distribution          | ✅                          | ✅                   |
-| Homebrew formula ease               | ✅                          | ✅                   |
-| AppleScript interop                 | via `std::process::Command` | via `exec.Command`   |
-| tmux control                        | via tmux CLI                | via tmux CLI         |
-| Cross-platform                      | ✅                          | ✅                   |
-| Ecosystem for CLIs                  | `clap` crate                | `cobra`              |
-| Community preference (Claude tools) | Less common                 | claude-squad uses Go |
+| Consideration | Rust | Go |
+|--------------|------|-----|
+| Single binary distribution | ✅ | ✅ |
+| Homebrew formula ease | ✅ | ✅ |
+| AppleScript interop | via `std::process::Command` | via `exec.Command` |
+| tmux control | via tmux CLI | via tmux CLI |
+| Cross-platform | ✅ | ✅ |
+| Ecosystem for CLIs | `clap` crate | `cobra` |
+| Community preference (Claude tools) | Less common | claude-squad uses Go |
 
 **Recommendation: Go** — aligns with the Claude tooling ecosystem (claude-squad is Go), fast compilation, simple cross-compilation, and `cobra` CLI framework is battle-tested.
 
@@ -279,23 +323,23 @@ claude-grid/
 type TerminalBackend interface {
     // Name returns the backend identifier
     Name() string
-
+    
     // Available checks if this backend can be used
     Available() bool
-
+    
     // SpawnWindows creates N windows, each running the given command
     // in the specified directory, and positions them according to the grid
     SpawnWindows(ctx context.Context, opts SpawnOptions) ([]WindowHandle, error)
-
+    
     // Tile repositions existing windows according to a new grid layout
     Tile(handles []WindowHandle, grid GridLayout, screen ScreenInfo) error
-
+    
     // SendKeys sends input to a specific window
     SendKeys(handle WindowHandle, text string) error
-
+    
     // Close terminates specific windows
     Close(handles []WindowHandle) error
-
+    
     // CloseAll terminates all windows in a session
     CloseAll(sessionName string) error
 }
@@ -304,8 +348,8 @@ type SpawnOptions struct {
     Count      int
     Command    string        // "claude" by default
     Dir        string        // working directory
-    Grid       GridLayout
-    Screen     ScreenInfo
+    Grid       GridLayout    
+    Screen     ScreenInfo    
     Prompts    []string      // optional per-instance prompts
     Session    string        // session name for tracking
 }
@@ -387,7 +431,7 @@ tileWithSystemEvents("Warp", handles, grid, screen)
 
 **Tiling with System Events (universal fallback for non-scriptable terminals):**
 
-Since Warp doesn't expose window positioning via its own API, we use macOS `System Events` accessibility API to position windows of _any_ application:
+Since Warp doesn't expose window positioning via its own API, we use macOS `System Events` accessibility API to position windows of *any* application:
 
 ```applescript
 tell application "System Events"
@@ -416,13 +460,13 @@ func (w *WarpBackend) Available() bool {
 
 **Limitations & workarounds:**
 
-| Limitation                                        | Workaround                                                                                |
-| ------------------------------------------------- | ----------------------------------------------------------------------------------------- |
-| No AppleScript session control                    | Use Launch Config YAML + URI scheme to spawn                                              |
+| Limitation | Workaround |
+|-----------|------------|
+| No AppleScript session control | Use Launch Config YAML + URI scheme to spawn |
 | No programmatic `write text` to a specific window | Use `commands:` in Launch Config for initial command; use tmux inside Warp for `SendKeys` |
-| Launch Config doesn't support window positioning  | Post-spawn tiling via `System Events` accessibility API                                   |
-| URI scheme can't pass dynamic commands            | Generate temporary YAML, trigger via URI, clean up after                                  |
-| No window identification API                      | Match windows by creation order + title pattern matching                                  |
+| Launch Config doesn't support window positioning | Post-spawn tiling via `System Events` accessibility API |
+| URI scheme can't pass dynamic commands | Generate temporary YAML, trigger via URI, clean up after |
+| No window identification API | Match windows by creation order + title pattern matching |
 
 **Split-pane alternative (single window mode):**
 
@@ -454,7 +498,7 @@ func CalculateGrid(count int) GridLayout {
     // since terminal content is horizontal
     cols := int(math.Ceil(math.Sqrt(float64(count))))
     rows := int(math.Ceil(float64(count) / float64(cols)))
-
+    
     // Special cases for common counts
     switch count {
     case 2:
@@ -465,7 +509,7 @@ func CalculateGrid(count int) GridLayout {
         // 3 on top, 2 on bottom (handled by uneven row logic)
         return GridLayout{Rows: 2, Cols: 3}
     }
-
+    
     return GridLayout{Rows: rows, Cols: cols}
 }
 ```
@@ -506,12 +550,10 @@ curl -fsSL https://raw.githubusercontent.com/<org>/claude-grid/main/install.sh |
 ### 7.2 Dependencies
 
 **Required:**
-
 - macOS 12+ OR Linux with X11/Wayland
 - One of: iTerm2, Terminal.app, tmux, Kitty
 
 **Optional:**
-
 - `claude` CLI (for Claude Code; any program works)
 - `git` (for worktree feature)
 - `tmux` (for cross-platform backend or persistence)
@@ -579,22 +621,23 @@ USAGE:
 
 COMMANDS:
     list                     List active sessions
-    kill <session>           Kill all windows in a session
+    kill <session>           Kill all windows in a session  
     resume <session>         Resume a previous tmux session
     preset <name>            Launch a saved preset from config
     broadcast <session> <msg> Send text to all windows in a session
 
 FLAGS:
-    -d, --dir <path>         Working directory (default: $PWD)
+    -d, --dir <path>         Working directory; repeatable for multi-repo (default: $PWD)
     -l, --layout <RxC>       Grid layout, e.g., "2x3" (default: auto)
     -p, --prompt <text>      Per-instance prompt (repeat for each)
     -P, --prompt-all <text>  Same prompt for all instances
     -f, --prompts-file <path> File with one prompt per line
-    -n, --name <name>        Session name (default: auto-generated)
+    -M, --manifest <path>    YAML manifest defining instances (dirs, prompts, branches)
+    -n, --name <n>        Session name (default: auto-generated)
     -t, --terminal <backend> Terminal: iterm, warp, terminal, tmux, kitty
-    -m, --mode <mode>        Window mode: "windows" (default) or "panes" (single window, Warp/iTerm2/tmux only)
+    -m, --mode <mode>        Window mode: "windows" (default) or "panes" (single window)
     -g, --gap <px>           Gap between windows in pixels (default: 4)
-    -w, --worktrees          Create git worktree per instance
+    -w, --worktrees          Create git worktree per instance (single-repo only)
     -b, --branch-prefix <s>  Branch prefix for worktrees
         --program <cmd>      Program to run (default: "claude")
         --no-tile            Spawn without tiling (for custom arrangement)
@@ -607,13 +650,13 @@ FLAGS:
 
 ## 10. Success Metrics
 
-| Metric                          | Target (3 months post-launch)          |
-| ------------------------------- | -------------------------------------- |
-| GitHub stars                    | 1,000+                                 |
-| Homebrew installs               | 500+                                   |
-| Time from install to first grid | < 60 seconds                           |
-| Supported terminal backends     | 4+ (iTerm2, Terminal.app, tmux, Kitty) |
-| Issues resolved within 1 week   | > 80%                                  |
+| Metric | Target (3 months post-launch) |
+|--------|-------------------------------|
+| GitHub stars | 1,000+ |
+| Homebrew installs | 500+ |
+| Time from install to first grid | < 60 seconds |
+| Supported terminal backends | 4+ (iTerm2, Terminal.app, tmux, Kitty) |
+| Issues resolved within 1 week | > 80% |
 
 ---
 
@@ -662,7 +705,6 @@ FLAGS:
 ## 13. Implementation Roadmap
 
 ### Phase 1 — MVP (v0.1, ~2 weeks)
-
 - [ ] CLI scaffolding with cobra
 - [ ] Screen detection (macOS)
 - [ ] Grid layout calculator
@@ -676,7 +718,6 @@ FLAGS:
 - [ ] GitHub Actions for CI + goreleaser
 
 ### Phase 2 — Power Features (v0.2, +2 weeks)
-
 - [ ] Per-instance prompts (`--prompt`)
 - [ ] tmux backend (cross-platform)
 - [ ] Config file support (`~/.claude-grid.toml`)
@@ -686,7 +727,6 @@ FLAGS:
 - [ ] Uneven grid handling (e.g., 5 → 3+2)
 
 ### Phase 3 — Advanced (v0.3, +3 weeks)
-
 - [ ] Broadcast mode
 - [ ] Git worktree integration
 - [ ] Status overlay / watch mode
@@ -705,7 +745,6 @@ FLAGS:
 **Logo concept:** A grid icon with the Claude ✦ sparkle in each cell.
 
 **Alternative names considered:**
-
 - `cgrid` — short but unclear
 - `claude-tile` — "tile" is overloaded (window managers)
 - `multicode` — generic

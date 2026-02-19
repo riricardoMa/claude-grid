@@ -292,6 +292,68 @@ func TestTerminalAppCloseGraceful(t *testing.T) {
 	}
 }
 
+func TestBuildSpawnScriptPerWindowPrompts(t *testing.T) {
+	bounds := []grid.WindowBounds{
+		{X: 0, Y: 0, Width: 800, Height: 600},
+		{X: 800, Y: 0, Width: 800, Height: 600},
+		{X: 0, Y: 600, Width: 800, Height: 600},
+	}
+
+	tests := []struct {
+		name        string
+		prompts     []string
+		wantPrompts []string
+	}{
+		{
+			name:        "per-window prompts injected",
+			prompts:     []string{"fix login", "add tests", "update docs"},
+			wantPrompts: []string{"fix login", "add tests", "update docs"},
+		},
+		{
+			name:        "no prompts — backward compat",
+			prompts:     nil,
+			wantPrompts: nil,
+		},
+		{
+			name:        "fewer prompts than windows",
+			prompts:     []string{"fix login"},
+			wantPrompts: []string{"fix login"},
+		},
+		{
+			name:        "prompt with special chars escaped",
+			prompts:     []string{`say "hello"`},
+			wantPrompts: []string{script.SanitizeForAppleScript(`say "hello"`)},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			executor := &mockScriptExecutor{output: "301,302,303"}
+			backend := NewTerminalAppBackend(executor)
+
+			ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+			defer cancel()
+
+			_, err := backend.SpawnWindows(ctx, SpawnOptions{
+				Count:   3,
+				Dirs:    []string{"/tmp/a", "/tmp/b", "/tmp/c"},
+				Prompts: tt.prompts,
+				Bounds:  bounds,
+			})
+			if err != nil {
+				t.Fatalf("SpawnWindows() error = %v", err)
+			}
+
+			gotScript := executor.runs[0]
+			for _, want := range tt.wantPrompts {
+				if !strings.Contains(gotScript, want) {
+					t.Errorf("script missing prompt %q\nscript:\n%s", want, gotScript)
+				}
+			}
+		})
+	}
+}
+
 func TestTerminalAppImplementsInterface(t *testing.T) {
 	var _ TerminalBackend = (*TerminalAppBackend)(nil)
 }

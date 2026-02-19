@@ -8,8 +8,8 @@ import (
 	"strings"
 
 	"github.com/riricardoMa/claude-grid/internal/grid"
-	"github.com/riricardoMa/claude-grid/internal/script"
 	"github.com/riricardoMa/claude-grid/internal/screen"
+	"github.com/riricardoMa/claude-grid/internal/script"
 )
 
 // TerminalBackend defines the interface for spawning and managing terminal windows.
@@ -42,6 +42,11 @@ type SpawnOptions struct {
 
 	// Dirs is an optional list of per-window directories. If set, Dirs[i] is used for window i. If empty, Dir is used for all windows.
 	Dirs []string
+
+	// Prompts is an optional list of per-window initial prompts. If set, Prompts[i] is passed
+	// to the claude command for window i as a positional argument. If empty or index out of
+	// range, no prompt is passed for that window.
+	Prompts []string
 
 	// Grid specifies the grid layout (rows and columns).
 	Grid grid.GridLayout

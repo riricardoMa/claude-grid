@@ -11,10 +11,10 @@ import (
 
 func TestGenerateSessionName(t *testing.T) {
 	store := NewStore("")
-	
+
 	// Test format: grid-XXXX (4 random hex chars)
 	name := store.GenerateSessionName()
-	
+
 	if !regexp.MustCompile(`^grid-[0-9a-f]{4}$`).MatchString(name) {
 		t.Errorf("GenerateSessionName() = %q, want format grid-[0-9a-f]{4}", name)
 	}
@@ -23,7 +23,7 @@ func TestGenerateSessionName(t *testing.T) {
 func TestGenerateSessionNameUnique(t *testing.T) {
 	tempDir := t.TempDir()
 	store := NewStore(tempDir)
-	
+
 	// Generate 100 names and check for uniqueness
 	names := make(map[string]bool)
 	for i := 0; i < 100; i++ {
@@ -33,7 +33,7 @@ func TestGenerateSessionNameUnique(t *testing.T) {
 		}
 		names[name] = true
 	}
-	
+
 	if len(names) != 100 {
 		t.Errorf("Expected 100 unique names, got %d", len(names))
 	}
@@ -42,16 +42,16 @@ func TestGenerateSessionNameUnique(t *testing.T) {
 func TestGenerateSessionNameCollisionCheck(t *testing.T) {
 	tempDir := t.TempDir()
 	store := NewStore(tempDir)
-	
+
 	// Create a session file manually
 	sessionDir := filepath.Join(tempDir, "sessions")
 	os.MkdirAll(sessionDir, 0755)
-	
+
 	// Create a session file with a specific name
 	existingName := "grid-abcd"
 	existingPath := filepath.Join(sessionDir, existingName+".json")
 	os.WriteFile(existingPath, []byte("{}"), 0644)
-	
+
 	// Mock the random generation to return the existing name first, then a different one
 	// We'll test this by ensuring GenerateSessionName avoids collisions
 	// For now, just verify the function doesn't crash when files exist
@@ -64,7 +64,7 @@ func TestGenerateSessionNameCollisionCheck(t *testing.T) {
 func TestSaveSession(t *testing.T) {
 	tempDir := t.TempDir()
 	store := NewStore(tempDir)
-	
+
 	session := Session{
 		Name:      "grid-test",
 		Backend:   "terminal",
@@ -76,29 +76,29 @@ func TestSaveSession(t *testing.T) {
 			{ID: "window-2", Index: 1},
 		},
 	}
-	
+
 	err := store.SaveSession(session)
 	if err != nil {
 		t.Fatalf("SaveSession() error = %v", err)
 	}
-	
+
 	// Verify file was created
 	sessionPath := filepath.Join(tempDir, "sessions", "grid-test.json")
 	if _, err := os.Stat(sessionPath); err != nil {
 		t.Errorf("Session file not created at %s: %v", sessionPath, err)
 	}
-	
+
 	// Verify file contents
 	data, err := os.ReadFile(sessionPath)
 	if err != nil {
 		t.Fatalf("Failed to read session file: %v", err)
 	}
-	
+
 	var loaded Session
 	if err := json.Unmarshal(data, &loaded); err != nil {
 		t.Fatalf("Failed to unmarshal session: %v", err)
 	}
-	
+
 	if loaded.Name != session.Name {
 		t.Errorf("Session.Name = %q, want %q", loaded.Name, session.Name)
 	}
@@ -113,11 +113,11 @@ func TestSaveSession(t *testing.T) {
 func TestLoadSession(t *testing.T) {
 	tempDir := t.TempDir()
 	store := NewStore(tempDir)
-	
+
 	// Create a session file
 	sessionDir := filepath.Join(tempDir, "sessions")
 	os.MkdirAll(sessionDir, 0755)
-	
+
 	session := Session{
 		Name:      "grid-load",
 		Backend:   "warp",
@@ -129,17 +129,17 @@ func TestLoadSession(t *testing.T) {
 			{ID: "2", Index: 1},
 		},
 	}
-	
+
 	data, _ := json.Marshal(session)
 	sessionPath := filepath.Join(sessionDir, "grid-load.json")
 	os.WriteFile(sessionPath, data, 0644)
-	
+
 	// Load the session
 	loaded, err := store.LoadSession("grid-load")
 	if err != nil {
 		t.Fatalf("LoadSession() error = %v", err)
 	}
-	
+
 	if loaded.Name != session.Name {
 		t.Errorf("Loaded session Name = %q, want %q", loaded.Name, session.Name)
 	}
@@ -157,7 +157,7 @@ func TestLoadSession(t *testing.T) {
 func TestLoadSessionNotFound(t *testing.T) {
 	tempDir := t.TempDir()
 	store := NewStore(tempDir)
-	
+
 	_, err := store.LoadSession("nonexistent")
 	if err == nil {
 		t.Error("LoadSession() expected error for nonexistent session, got nil")
@@ -167,39 +167,39 @@ func TestLoadSessionNotFound(t *testing.T) {
 func TestListSessions(t *testing.T) {
 	tempDir := t.TempDir()
 	store := NewStore(tempDir)
-	
+
 	// Create multiple session files
 	sessionDir := filepath.Join(tempDir, "sessions")
 	os.MkdirAll(sessionDir, 0755)
-	
+
 	sessions := []Session{
 		{Name: "grid-one", Backend: "terminal", Count: 1, Dir: "/tmp", CreatedAt: time.Now()},
 		{Name: "grid-two", Backend: "warp", Count: 2, Dir: "/home", CreatedAt: time.Now()},
 		{Name: "grid-three", Backend: "terminal", Count: 3, Dir: "/var", CreatedAt: time.Now()},
 	}
-	
+
 	for _, s := range sessions {
 		data, _ := json.Marshal(s)
 		path := filepath.Join(sessionDir, s.Name+".json")
 		os.WriteFile(path, data, 0644)
 	}
-	
+
 	// List sessions
 	listed, err := store.ListSessions()
 	if err != nil {
 		t.Fatalf("ListSessions() error = %v", err)
 	}
-	
+
 	if len(listed) != 3 {
 		t.Errorf("ListSessions() returned %d sessions, want 3", len(listed))
 	}
-	
+
 	// Verify all sessions are present
 	names := make(map[string]bool)
 	for _, s := range listed {
 		names[s.Name] = true
 	}
-	
+
 	for _, s := range sessions {
 		if !names[s.Name] {
 			t.Errorf("Session %q not found in list", s.Name)
@@ -210,13 +210,13 @@ func TestListSessions(t *testing.T) {
 func TestListSessionsEmpty(t *testing.T) {
 	tempDir := t.TempDir()
 	store := NewStore(tempDir)
-	
+
 	// List sessions from empty directory
 	listed, err := store.ListSessions()
 	if err != nil {
 		t.Fatalf("ListSessions() error = %v", err)
 	}
-	
+
 	if len(listed) != 0 {
 		t.Errorf("ListSessions() returned %d sessions, want 0", len(listed))
 	}
@@ -225,11 +225,11 @@ func TestListSessionsEmpty(t *testing.T) {
 func TestDeleteSession(t *testing.T) {
 	tempDir := t.TempDir()
 	store := NewStore(tempDir)
-	
+
 	// Create a session file
 	sessionDir := filepath.Join(tempDir, "sessions")
 	os.MkdirAll(sessionDir, 0755)
-	
+
 	session := Session{
 		Name:      "grid-delete",
 		Backend:   "terminal",
@@ -237,22 +237,22 @@ func TestDeleteSession(t *testing.T) {
 		Dir:       "/tmp",
 		CreatedAt: time.Now(),
 	}
-	
+
 	data, _ := json.Marshal(session)
 	sessionPath := filepath.Join(sessionDir, "grid-delete.json")
 	os.WriteFile(sessionPath, data, 0644)
-	
+
 	// Verify file exists
 	if _, err := os.Stat(sessionPath); err != nil {
 		t.Fatalf("Session file not created: %v", err)
 	}
-	
+
 	// Delete the session
 	err := store.DeleteSession("grid-delete")
 	if err != nil {
 		t.Fatalf("DeleteSession() error = %v", err)
 	}
-	
+
 	// Verify file is deleted
 	if _, err := os.Stat(sessionPath); err == nil {
 		t.Error("Session file still exists after DeleteSession()")
@@ -264,7 +264,7 @@ func TestDeleteSession(t *testing.T) {
 func TestDeleteSessionNotFound(t *testing.T) {
 	tempDir := t.TempDir()
 	store := NewStore(tempDir)
-	
+
 	err := store.DeleteSession("nonexistent")
 	if err == nil {
 		t.Error("DeleteSession() expected error for nonexistent session, got nil")
@@ -276,7 +276,7 @@ func TestAutoCreateDirectory(t *testing.T) {
 	// Use a non-existent subdirectory
 	nonExistentDir := filepath.Join(tempDir, "subdir", "sessions")
 	store := NewStore(filepath.Join(tempDir, "subdir"))
-	
+
 	session := Session{
 		Name:      "grid-mkdir",
 		Backend:   "terminal",
@@ -284,17 +284,17 @@ func TestAutoCreateDirectory(t *testing.T) {
 		Dir:       "/tmp",
 		CreatedAt: time.Now(),
 	}
-	
+
 	err := store.SaveSession(session)
 	if err != nil {
 		t.Fatalf("SaveSession() error = %v", err)
 	}
-	
+
 	// Verify directory was created
 	if _, err := os.Stat(nonExistentDir); err != nil {
 		t.Errorf("Directory not auto-created at %s: %v", nonExistentDir, err)
 	}
-	
+
 	// Verify file exists
 	sessionPath := filepath.Join(nonExistentDir, "grid-mkdir.json")
 	if _, err := os.Stat(sessionPath); err != nil {
@@ -305,7 +305,7 @@ func TestAutoCreateDirectory(t *testing.T) {
 func TestSessionCRUDLifecycle(t *testing.T) {
 	tempDir := t.TempDir()
 	store := NewStore(tempDir)
-	
+
 	// CREATE
 	session := Session{
 		Name:      "grid-lifecycle",
@@ -318,27 +318,27 @@ func TestSessionCRUDLifecycle(t *testing.T) {
 			{ID: "w2", Index: 1},
 		},
 	}
-	
+
 	if err := store.SaveSession(session); err != nil {
 		t.Fatalf("SaveSession() error = %v", err)
 	}
-	
+
 	// READ
 	loaded, err := store.LoadSession("grid-lifecycle")
 	if err != nil {
 		t.Fatalf("LoadSession() error = %v", err)
 	}
-	
+
 	if loaded.Name != session.Name || loaded.Count != session.Count {
 		t.Error("Loaded session doesn't match saved session")
 	}
-	
+
 	// LIST
 	sessions, err := store.ListSessions()
 	if err != nil {
 		t.Fatalf("ListSessions() error = %v", err)
 	}
-	
+
 	found := false
 	for _, s := range sessions {
 		if s.Name == "grid-lifecycle" {
@@ -349,12 +349,12 @@ func TestSessionCRUDLifecycle(t *testing.T) {
 	if !found {
 		t.Error("Session not found in list after save")
 	}
-	
+
 	// DELETE
 	if err := store.DeleteSession("grid-lifecycle"); err != nil {
 		t.Fatalf("DeleteSession() error = %v", err)
 	}
-	
+
 	// Verify deletion
 	_, err = store.LoadSession("grid-lifecycle")
 	if err == nil {
@@ -365,7 +365,7 @@ func TestSessionCRUDLifecycle(t *testing.T) {
 func TestSaveSessionWithWorktrees(t *testing.T) {
 	tempDir := t.TempDir()
 	store := NewStore(tempDir)
-	
+
 	session := Session{
 		Name:      "grid-worktrees",
 		Backend:   "terminal",
@@ -383,17 +383,17 @@ func TestSaveSessionWithWorktrees(t *testing.T) {
 		Status:   "active",
 		RepoPath: "/home/user/project",
 	}
-	
+
 	err := store.SaveSession(session)
 	if err != nil {
 		t.Fatalf("SaveSession() error = %v", err)
 	}
-	
+
 	loaded, err := store.LoadSession("grid-worktrees")
 	if err != nil {
 		t.Fatalf("LoadSession() error = %v", err)
 	}
-	
+
 	if len(loaded.Worktrees) != 2 {
 		t.Errorf("Worktrees count = %d, want 2", len(loaded.Worktrees))
 	}
@@ -411,13 +411,60 @@ func TestSaveSessionWithWorktrees(t *testing.T) {
 	}
 }
 
+func TestSaveSessionWithMultiDir(t *testing.T) {
+	tempDir := t.TempDir()
+	store := NewStore(tempDir)
+
+	session := Session{
+		Name:      "grid-multidir",
+		Backend:   "terminal",
+		Count:     3,
+		Dir:       "/home/user/project/frontend",
+		CreatedAt: time.Now(),
+		Windows: []WindowRef{
+			{ID: "w1", Index: 0},
+			{ID: "w2", Index: 1},
+			{ID: "w3", Index: 2},
+		},
+		Dirs:         []string{"/home/user/frontend", "/home/user/backend", "/home/user/docs"},
+		Prompts:      []string{"fix login page", "add rate limiting", "update API docs"},
+		ManifestPath: "/home/user/sprint.yaml",
+	}
+
+	err := store.SaveSession(session)
+	if err != nil {
+		t.Fatalf("SaveSession() error = %v", err)
+	}
+
+	loaded, err := store.LoadSession("grid-multidir")
+	if err != nil {
+		t.Fatalf("LoadSession() error = %v", err)
+	}
+
+	if len(loaded.Dirs) != 3 {
+		t.Errorf("Dirs count = %d, want 3", len(loaded.Dirs))
+	}
+	if loaded.Dirs[0] != "/home/user/frontend" {
+		t.Errorf("Dirs[0] = %q, want /home/user/frontend", loaded.Dirs[0])
+	}
+	if len(loaded.Prompts) != 3 {
+		t.Errorf("Prompts count = %d, want 3", len(loaded.Prompts))
+	}
+	if loaded.Prompts[1] != "add rate limiting" {
+		t.Errorf("Prompts[1] = %q, want \"add rate limiting\"", loaded.Prompts[1])
+	}
+	if loaded.ManifestPath != "/home/user/sprint.yaml" {
+		t.Errorf("ManifestPath = %q, want /home/user/sprint.yaml", loaded.ManifestPath)
+	}
+}
+
 func TestBackwardCompatibilityOldSessionFormat(t *testing.T) {
 	tempDir := t.TempDir()
 	store := NewStore(tempDir)
-	
+
 	sessionDir := filepath.Join(tempDir, "sessions")
 	os.MkdirAll(sessionDir, 0755)
-	
+
 	oldSessionJSON := `{
   "name": "grid-old",
   "backend": "terminal",
@@ -429,15 +476,15 @@ func TestBackwardCompatibilityOldSessionFormat(t *testing.T) {
     {"id": "w2", "index": 1}
   ]
 }`
-	
+
 	sessionPath := filepath.Join(sessionDir, "grid-old.json")
 	os.WriteFile(sessionPath, []byte(oldSessionJSON), 0644)
-	
+
 	loaded, err := store.LoadSession("grid-old")
 	if err != nil {
 		t.Fatalf("LoadSession() error = %v", err)
 	}
-	
+
 	if loaded.Name != "grid-old" {
 		t.Errorf("Name = %q, want %q", loaded.Name, "grid-old")
 	}
@@ -452,10 +499,55 @@ func TestBackwardCompatibilityOldSessionFormat(t *testing.T) {
 	}
 }
 
+func TestBackwardCompatibilityMultiDirFields(t *testing.T) {
+	tempDir := t.TempDir()
+	store := NewStore(tempDir)
+
+	sessionDir := filepath.Join(tempDir, "sessions")
+	os.MkdirAll(sessionDir, 0755)
+
+	// Old format JSON without dirs/prompts/manifest_path
+	oldSessionJSON := `{
+  "name": "grid-legacy",
+  "backend": "terminal",
+  "count": 2,
+  "dir": "/tmp",
+  "created_at": "2026-02-17T10:30:00Z",
+  "windows": [
+    {"id": "w1", "index": 0},
+    {"id": "w2", "index": 1}
+  ]
+}`
+	sessionPath := filepath.Join(sessionDir, "grid-legacy.json")
+	os.WriteFile(sessionPath, []byte(oldSessionJSON), 0644)
+
+	loaded, err := store.LoadSession("grid-legacy")
+	if err != nil {
+		t.Fatalf("LoadSession() error = %v", err)
+	}
+
+	if loaded.Dirs != nil {
+		t.Errorf("Dirs should be nil for old format, got %v", loaded.Dirs)
+	}
+	if loaded.Prompts != nil {
+		t.Errorf("Prompts should be nil for old format, got %v", loaded.Prompts)
+	}
+	if loaded.ManifestPath != "" {
+		t.Errorf("ManifestPath should be empty for old format, got %q", loaded.ManifestPath)
+	}
+	// Ensure existing fields still work
+	if loaded.Name != "grid-legacy" {
+		t.Errorf("Name = %q, want grid-legacy", loaded.Name)
+	}
+	if loaded.Dir != "/tmp" {
+		t.Errorf("Dir = %q, want /tmp", loaded.Dir)
+	}
+}
+
 func TestUpdateSession(t *testing.T) {
 	tempDir := t.TempDir()
 	store := NewStore(tempDir)
-	
+
 	session := Session{
 		Name:      "grid-update",
 		Backend:   "terminal",
@@ -467,25 +559,25 @@ func TestUpdateSession(t *testing.T) {
 		},
 		Status: "active",
 	}
-	
+
 	if err := store.SaveSession(session); err != nil {
 		t.Fatalf("SaveSession() error = %v", err)
 	}
-	
+
 	session.Status = "stopped"
 	session.Worktrees = []WorktreeRef{
 		{Path: "/tmp/wt1", Branch: "main"},
 	}
-	
+
 	if err := store.UpdateSession(session); err != nil {
 		t.Fatalf("UpdateSession() error = %v", err)
 	}
-	
+
 	loaded, err := store.LoadSession("grid-update")
 	if err != nil {
 		t.Fatalf("LoadSession() error = %v", err)
 	}
-	
+
 	if loaded.Status != "stopped" {
 		t.Errorf("Status = %q, want %q", loaded.Status, "stopped")
 	}
