@@ -28,29 +28,29 @@ func NewListCmd(storePath string, executor script.ScriptExecutor) *cobra.Command
 				return nil
 			}
 
-		w := tabwriter.NewWriter(cmd.OutOrStdout(), 0, 0, 2, ' ', 0)
-		fmt.Fprintln(w, "SESSION\tSTATUS\tBACKEND\tWINDOWS\tDIR\tCREATED")
+			w := tabwriter.NewWriter(cmd.OutOrStdout(), 0, 0, 2, ' ', 0)
+			fmt.Fprintln(w, "SESSION\tSTATUS\tBACKEND\tWINDOWS\tDIR\tCREATED")
 
-		for _, sess := range sessions {
-			isLive := checkSessionLiveness(cmd.Context(), executor, sess)
-			statusCol := sess.Status
-			if statusCol == "" {
-				statusCol = "active"
-			}
-			if !isLive {
-				statusCol = statusCol + " (stale)"
-			}
+			for _, sess := range sessions {
+				isLive := checkSessionLiveness(cmd.Context(), executor, sess)
+				statusCol := sess.Status
+				if statusCol == "" {
+					statusCol = "active"
+				}
+				if !isLive {
+					statusCol = statusCol + " (stale)"
+				}
 
-			displayDir := sess.Dir
-			if strings.HasPrefix(displayDir, os.ExpandEnv("$HOME")) {
-				displayDir = "~" + strings.TrimPrefix(displayDir, os.ExpandEnv("$HOME"))
-			}
+				displayDir := sess.Dir
+				if strings.HasPrefix(displayDir, os.ExpandEnv("$HOME")) {
+					displayDir = "~" + strings.TrimPrefix(displayDir, os.ExpandEnv("$HOME"))
+				}
 
-			createdStr := sess.CreatedAt.Format("2006-01-02 15:04")
-			fmt.Fprintf(w, "%s\t%s\t%s\t%d\t%s\t%s\n",
-				sess.Name, statusCol, sess.Backend, len(sess.Windows),
-				displayDir, createdStr)
-		}
+				createdStr := sess.CreatedAt.Format("2006-01-02 15:04")
+				fmt.Fprintf(w, "%s\t%s\t%s\t%d\t%s\t%s\n",
+					sess.Name, statusCol, sess.Backend, len(sess.Windows),
+					displayDir, createdStr)
+			}
 
 			w.Flush()
 			return nil
