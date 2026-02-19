@@ -9,6 +9,7 @@
 - 🚀 **One-command launch**: `claude-grid 4` spawns 4 tiled terminal windows
 - 🗂️ **Multi-repo orchestration**: Each window in a different repo with its own prompt
 - 📋 **Manifest files**: Define complex multi-repo sprints in a single YAML file
+- 🌿 **Git worktrees**: Spawn N isolated branches from your current repo — perfect for parallel feature work
 - 📐 **Auto-calculated grid layouts**: 1→1×1, 2→1×2, 4→2×2, 9→3×3, etc.
 - 🖥️ **Multiple terminal backends**: Terminal.app (built-in) and Warp
 - 💾 **Session tracking**: List and kill sessions with `list` and `kill` commands
@@ -61,6 +62,9 @@ claude-grid \
 # Load a multi-repo sprint from a manifest file
 claude-grid --manifest sprint.yaml
 
+# Spawn 4 isolated git worktrees from the current repo
+claude-grid 4 --worktrees
+
 # Use specific terminal backend
 claude-grid 2 --terminal warp
 
@@ -83,6 +87,8 @@ claude-grid [count] [flags]
 - `--dir, -d <path>` — Working directory (repeatable; infers count from number of flags)
 - `--prompt <text>` — Per-instance prompt sent to Claude (repeatable; paired with `--dir` by index)
 - `--manifest, -M <file>` — YAML manifest defining instances (see [Multi-Repo Mode](#multi-repo-mode))
+- `--worktrees, -w` — Create a git worktree for each window (see [Git Worktrees Mode](#git-worktrees-mode))
+- `--branch-prefix, -b <prefix>` — Branch name prefix for worktrees (default: `grid`; e.g., `grid-happy-otter`)
 - `--terminal, -t <backend>` — Terminal backend: `terminal` or `warp` (default: auto-detect)
 - `--name, -n <name>` — Session name (default: auto-generated as `grid-XXXX`)
 - `--layout, -l <RxC>` — Grid layout override, e.g., `2x3` or `3X2` (default: auto-calculated)
@@ -190,25 +196,78 @@ claude-grid --manifest sprint.yaml --dir ~/projects/foo
 claude-grid --manifest sprint.yaml 4
 ```
 
+### Git Worktrees Mode
+
+Spawn N Claude instances each working on their own **isolated git branch** — the ideal workflow for tackling multiple parallel features or experiments on the same repo without conflicts.
+
+```bash
+# 4 windows, each on a fresh isolated branch (from current repo)
+claude-grid 4 --worktrees
+
+# Custom branch prefix — branches named like myfeature-happy-otter, myfeature-quiet-fox, …
+claude-grid 3 --worktrees --branch-prefix myfeature
+```
+
+**How it works:**
+- Each window gets its own git worktree under `~/.claude-grid/worktrees/<session-name>/`
+- Branches are auto-generated as `<prefix>-<adjective>-<animal>` (e.g., `grid-happy-otter`)
+- Every window opens Claude directly in its worktree directory
+- Worktrees are preserved after `kill` — use `clean` to remove them when done
+
+**Branch prefix rules:**
+- Lowercase alphanumeric and hyphens only
+- 3–50 characters
+- No leading or trailing hyphens
+- Default: `grid`
+
+**Lifecycle:**
+
+```bash
+# 1. Spawn — creates worktrees and opens Claude in each
+claude-grid 3 --worktrees --name my-sprint
+
+# 2. Work — each Claude instance is isolated on its own branch
+
+# 3. Kill — closes windows, marks session as 'stopped', preserves worktrees
+claude-grid kill my-sprint
+
+# 4. Clean — removes worktrees once you've merged/discarded branches
+claude-grid clean my-sprint
+```
+
+**Conflict Detection:**
+
+```bash
+# ✅ Valid — worktrees + layout/name/terminal work fine
+claude-grid 4 --worktrees --name my-sprint --terminal warp
+
+# ❌ Error — worktrees conflicts with --dir
+claude-grid 4 --worktrees --dir ~/other-repo
+
+# ❌ Error — worktrees conflicts with --manifest
+claude-grid --worktrees --manifest sprint.yaml
+```
+
 ### List Sessions
 
 ```bash
 claude-grid list
 ```
 
-Shows all active sessions with:
-- Session name
-- Backend (terminal or warp)
-- Window count
-- Working directory
-- Creation time
-- Stale indicator (if windows no longer exist)
+Shows all sessions with their current status:
+
+| Status | Meaning |
+|--------|---------|
+| `active` | Session is running (windows open) |
+| `stopped` | Session was killed but worktrees still exist on disk |
+| `stopped (stale)` | Session was stopped and worktree directories no longer exist |
 
 **Example output:**
 ```
-SESSION     BACKEND    WINDOWS  DIR                    CREATED
-grid-a3f2   terminal   4        ~/projects/my-app      2026-02-17 10:30
-grid-b1c4   warp       2        ~/projects/api         2026-02-17 11:15
+SESSION       STATUS   BACKEND   WINDOWS  DIR                    CREATED
+grid-a3f2     active   terminal  4        ~/projects/my-app      2026-02-17 10:30
+my-sprint     stopped  warp      3        ~/projects/api         2026-02-17 11:15
+grid-b1c4     active   warp      2        ~/projects/api         2026-02-17 12:00
 ```
 
 ### Kill Session
@@ -217,11 +276,34 @@ grid-b1c4   warp       2        ~/projects/api         2026-02-17 11:15
 claude-grid kill <session-name>
 ```
 
-Closes all windows in the session and removes the session file.
+Closes all windows in the session.
+
+- **Sessions without worktrees**: session record is deleted entirely.
+- **Sessions with worktrees**: windows are closed, session status is set to `stopped`, and worktrees are preserved on disk. Run `claude-grid clean <session-name>` to remove worktrees when ready.
 
 **Example:**
 ```bash
 claude-grid kill grid-a3f2
+# → "Session 'grid-a3f2' stopped. 3 windows closed. Worktrees preserved.
+#     Run 'claude-grid clean grid-a3f2' to remove worktrees."
+```
+
+### Clean Session
+
+```bash
+claude-grid clean <session-name>
+```
+
+Removes all git worktrees associated with a stopped session, then runs `git worktree prune`.
+
+- Warns (but does not block) if a worktree has uncommitted changes
+- Removes all worktrees even if some fail (error aggregation, no short-circuit)
+- Only valid for sessions that have worktrees (`--worktrees` was used at spawn time)
+
+**Example:**
+```bash
+claude-grid clean my-sprint
+# → "Session 'my-sprint' cleaned. 3/3 worktrees removed."
 ```
 
 ### Version
